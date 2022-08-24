@@ -1,7 +1,6 @@
 package com.atguigu.gmall.product.service;
 
 import com.atguigu.gmall.model.product.SpuInfo;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,13 +10,4 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface SpuInfoService extends IService<SpuInfo> {
 
-    /**
-     * 获取spu分页列表
-     *
-     * @param page
-     * @param limit
-     * @param category3Id
-     * @return
-     */
-    Page<SpuInfo> getSpuPage(Integer page, Integer limit, Long category3Id);
 }

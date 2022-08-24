@@ -1,13 +1,19 @@
 package com.atguigu.gmall.product.controller;
 
 import com.atguigu.gmall.common.result.Result;
-import com.atguigu.gmall.model.product.*;
-import com.atguigu.gmall.product.service.*;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.atguigu.gmall.model.product.BaseCategory1;
+import com.atguigu.gmall.model.product.BaseCategory2;
+import com.atguigu.gmall.model.product.BaseCategory3;
+import com.atguigu.gmall.product.service.BaseCategory1Service;
+import com.atguigu.gmall.product.service.BaseCategory2Service;
+import com.atguigu.gmall.product.service.BaseCategory3Service;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -26,12 +32,7 @@ public class BaseCategoryController {
     private BaseCategory2Service baseCategory2Service;
     @Autowired
     private BaseCategory3Service baseCategory3Service;
-    @Autowired
-    private BaseAttrInfoService baseAttrInfoService;
-    @Autowired
-    private BaseAttrValueService baseAttrValueService;
-    @Autowired
-    private SpuInfoService spuInfoService;
+
     @GetMapping("/getCategory1")
     @ApiOperation("一级产品分类列表")
     public Result<List<BaseCategory1>> getCategory1() {
@@ -53,36 +54,5 @@ public class BaseCategoryController {
         return Result.ok(list);
     }
 
-    @GetMapping("/attrInfoList/{category1Id}/{category2Id}/{category3Id}")
-    @ApiOperation("根据分类id获取平台属性")
-    public Result<List<BaseAttrInfo>> attrInfoList(@PathVariable Long category1Id,
-                                                   @PathVariable Long category2Id,
-                                                   @PathVariable Long category3Id) {
-        List<BaseAttrInfo> list = baseAttrInfoService.attrInfoList(category1Id, category2Id, category3Id);
-        return Result.ok(list);
-    }
 
-    @PostMapping("/saveAttrInfo")
-    @ApiOperation("添加/修改平台属性")
-    public Result<Object> saveAttrInfo(@RequestBody BaseAttrInfo baseAttrInfo) {
-        baseAttrInfoService.saveAttrInfo(baseAttrInfo);
-        return Result.ok();
-    }
-
-    @GetMapping("/getAttrValueList/{attrId}")
-    @ApiOperation("根据平台属性ID获取平台属性对象数据")
-    public Result<List<BaseAttrValue>> getAttrValueList(@PathVariable Long attrId) {
-        List<BaseAttrValue> list = baseAttrValueService.getAttrValueList(attrId);
-        return Result.ok(list);
-    }
-
-    @GetMapping("/{page}/{limit}")
-    @ApiOperation("获取spu分页列表")
-    public Result<Page<SpuInfo>> getSpuPage(@PathVariable Integer page,
-                                            @PathVariable Integer limit,
-                                            @RequestParam Long category3Id) {
-        Page<SpuInfo> pages = spuInfoService.getSpuPage(page, limit, category3Id);
-//        System.out.println("page: " + page + " limit: " + limit + " category3Id: " + category3Id);
-        return Result.ok(pages);
-    }
 }

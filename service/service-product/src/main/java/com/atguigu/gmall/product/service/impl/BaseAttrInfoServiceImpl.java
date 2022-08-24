@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,53 +29,46 @@ public class BaseAttrInfoServiceImpl extends ServiceImpl<BaseAttrInfoMapper, Bas
 
     @Override
     public List<BaseAttrInfo> attrInfoList(Long category1Id, Long category2Id, Long category3Id) {
-        int level = 0;
-        if (category1Id != 0) {
-            if (category2Id == 0) {
-                if (category3Id == 0) {
-                    level = 3;
-                } else {
-                    return null;
-                }
-            } else {
-                if (category3Id == 0) {
-                    level = 2;
-                } else {
-                    level = 1;
-                }
-            }
-        } else {
-            return null;
-        }
-        List<BaseAttrInfo> baseAttrInfos =
-                baseAttrInfoMapper
-                        .selectList(
-                                new LambdaQueryWrapper<BaseAttrInfo>()
-                                        .eq(BaseAttrInfo::getCategoryLevel, level));
-        baseAttrInfos.forEach(attr ->
-                attr.setAttrValueList(baseAttrValueMapper
-                        .selectList(
-                                new LambdaQueryWrapper<BaseAttrValue>()
-                                        .eq(BaseAttrValue::getAttrId, attr.getId())))
-        );
-        return baseAttrInfos;
+        return baseAttrInfoMapper.attrInfoList(category1Id, category2Id, category3Id);
     }
 
     @Override
     public void saveAttrInfo(BaseAttrInfo baseAttrInfo) {
         if (baseAttrInfo.getId() == null) {
+            //id为null -> 新增
             this.save(baseAttrInfo);
             baseAttrInfo.getAttrValueList().forEach(baseAttrValue -> {
                 baseAttrValue.setAttrId(baseAttrInfo.getId());
                 baseAttrValueMapper.insert(baseAttrValue);
             });
         } else {
+            //id不为null -> 更新bai
             this.updateById(baseAttrInfo);
-            baseAttrInfo.getAttrValueList().forEach(baseAttrValue -> {
+            //统计本次更新中的bavId
+            List<BaseAttrValue> bavList = baseAttrInfo.getAttrValueList();
+            List<Long> bavIdList = new ArrayList<>();
+            bavList.forEach(value -> {
+                if (value.getId() != null) {
+                    bavIdList.add(value.getId());
+                }
+            });
+            if (bavIdList.size() > 0) {
+                //删除主键Id不在此List中的bav
+                baseAttrValueMapper.delete(new LambdaQueryWrapper<BaseAttrValue>()
+                        .eq(BaseAttrValue::getAttrId, baseAttrInfo.getId())
+                        .notIn(BaseAttrValue::getId, bavIdList));
+            } else {
+                baseAttrValueMapper.delete(new LambdaQueryWrapper<BaseAttrValue>()
+                        .eq(BaseAttrValue::getAttrId, baseAttrInfo.getId()));
+            }
+            //遍历bavList
+            bavList.forEach(baseAttrValue -> {
                 if (baseAttrValue.getId() == null) {
+                    //bavId为空 -> 新增
                     baseAttrValue.setAttrId(baseAttrInfo.getId());
                     baseAttrValueMapper.insert(baseAttrValue);
                 } else {
+                    //bavId不为空 -> 修改
                     baseAttrValueMapper.updateById(baseAttrValue);
                 }
             });

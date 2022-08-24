@@ -19,14 +19,6 @@ import javax.annotation.Resource;
 public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoMapper, SpuInfo>
         implements SpuInfoService {
 
-    @Resource
-    private SpuInfoMapper spuInfoMapper;
-
-    @Override
-    public Page<SpuInfo> getSpuPage(Integer page, Integer limit, Long category3Id) {
-//        return this.page(new Page<SpuInfo>(page, limit), new LambdaQueryWrapper<SpuInfo>().eq(SpuInfo::getCategory3Id, category3Id));
-        return spuInfoMapper.selectPage(new Page<SpuInfo>(page, limit), new LambdaQueryWrapper<SpuInfo>().eq(SpuInfo::getCategory3Id, category3Id));
-    }
 }
 
 
