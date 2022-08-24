@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
  *
  */
 @Data
+@ToString
 @ApiModel(description = "SkuInfo")
 @TableName("sku_info")
 public class SkuInfo extends BaseEntity {

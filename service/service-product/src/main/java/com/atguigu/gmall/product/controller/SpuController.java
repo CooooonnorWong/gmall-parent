@@ -1,12 +1,8 @@
 package com.atguigu.gmall.product.controller;
 
 import com.atguigu.gmall.common.result.Result;
-import com.atguigu.gmall.model.product.BaseSaleAttr;
-import com.atguigu.gmall.model.product.SkuInfo;
-import com.atguigu.gmall.model.product.SpuInfo;
-import com.atguigu.gmall.product.service.BaseSaleAttrService;
-import com.atguigu.gmall.product.service.SkuInfoService;
-import com.atguigu.gmall.product.service.SpuInfoService;
+import com.atguigu.gmall.model.product.*;
+import com.atguigu.gmall.product.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -23,13 +19,11 @@ import java.util.List;
 @RestController
 @Api(tags = "SPU")
 @RequestMapping("/admin/product")
-public class BaseSaleController {
+public class SpuController {
     @Autowired
     private SpuInfoService spuInfoService;
     @Autowired
     private BaseSaleAttrService baseSaleAttrService;
-    @Autowired
-    private SkuInfoService skuInfoService;
 
     @GetMapping("/{page}/{limit}")
     @ApiOperation("获取spu分页列表")
@@ -48,12 +42,15 @@ public class BaseSaleController {
         return Result.ok(list);
     }
 
-    @GetMapping("/list/{page}/{limit}")
-    @ApiOperation("获取Sku分页列表")
-    public Result<Page<SkuInfo>> getSkuPages(@PathVariable Integer page,
-                                             @PathVariable Integer limit) {
-        Page<SkuInfo> pages = new Page<>(page, limit);
-        skuInfoService.page(pages);
-        return Result.ok(pages);
+
+    @PostMapping("/saveSpuInfo")
+    @ApiOperation("添加SPU")
+    public Result<Object> saveSpuInfo(@RequestBody SpuInfo spuInfo) {
+        if (spuInfo == null || spuInfo.getSpuName().isEmpty()) {
+            return Result.fail();
+        }
+        spuInfoService.saveSpuInfo(spuInfo);
+        return Result.ok();
     }
+
 }

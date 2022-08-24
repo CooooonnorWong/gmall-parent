@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * <p>
@@ -14,6 +15,7 @@ import lombok.Data;
  *
  */
 @Data
+@ToString
 @ApiModel(description = "Sku销售属性值")
 @TableName("sku_sale_attr_value")
 public class SkuSaleAttrValue extends BaseEntity {

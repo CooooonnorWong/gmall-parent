@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * <p>
@@ -14,6 +15,7 @@ import lombok.Data;
  *
  */
 @Data
+@ToString
 @ApiModel(description = "Sku图片")
 @TableName("sku_image")
 public class SkuImage extends BaseEntity {
