@@ -5,14 +5,18 @@ import com.atguigu.gmall.model.product.SkuAttrValue;
 import com.atguigu.gmall.model.product.SkuImage;
 import com.atguigu.gmall.model.product.SkuInfo;
 import com.atguigu.gmall.model.product.SkuSaleAttrValue;
-import com.atguigu.gmall.product.mapper.*;
+import com.atguigu.gmall.product.mapper.SkuInfoMapper;
+import com.atguigu.gmall.product.service.SkuAttrValueService;
+import com.atguigu.gmall.product.service.SkuImageService;
 import com.atguigu.gmall.product.service.SkuInfoService;
+import com.atguigu.gmall.product.service.SkuSaleAttrValueService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Connor
@@ -23,46 +27,44 @@ import java.util.stream.Collectors;
 public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         implements SkuInfoService {
 
+    @Autowired
+    private SkuImageService skuImageService;
+    @Autowired
+    private SkuAttrValueService skuAttrValueService;
+    @Autowired
+    private SkuSaleAttrValueService skuSaleAttrValueService;
     @Resource
-    private SkuImageMapper skuImageMapper;
-    @Resource
-    private SkuAttrValueMapper skuAttrValueMapper;
-    @Resource
-    private SkuSaleAttrValueMapper skuSaleAttrValueMapper;
-    @Resource
-    private SpuInfoMapper spuInfoMapper;
+    private SkuInfoMapper skuInfoMapper;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveSkuInfo(SkuInfo skuInfo) {
         List<SkuImage> skuImageList = skuInfo.getSkuImageList();
         List<SkuAttrValue> skuAttrValueList = skuInfo.getSkuAttrValueList();
         List<SkuSaleAttrValue> skuSaleAttrValueList = skuInfo.getSkuSaleAttrValueList();
-        skuInfo.setIsSale(0);
-        if (skuImageList != null && skuImageList.size() > 0) {
-            skuInfo.setSkuDefaultImg(skuImageList.stream().filter(skuImage ->
-                    "1".equals(skuImage.getIsDefault())).collect(Collectors.toList()).get(0).getImgUrl());
-        }
-        skuInfo.setTmId(spuInfoMapper.selectById(skuInfo.getSpuId()).getTmId());
         this.save(skuInfo);
         if (skuImageList != null && skuImageList.size() > 0) {
-            skuImageList.forEach(skuImage -> {
-                skuImage.setSkuId(skuInfo.getId());
-                skuImageMapper.insert(skuImage);
-            });
+            skuImageList.forEach(skuImage -> skuImage.setSkuId(skuInfo.getId()));
+            skuImageService.saveBatch(skuImageList);
         }
         if (skuAttrValueList != null && skuAttrValueList.size() > 0) {
-            skuAttrValueList.forEach(skuAttrValue -> {
-                skuAttrValue.setSkuId(skuInfo.getId());
-                skuAttrValueMapper.insert(skuAttrValue);
-            });
+            skuAttrValueList.forEach(skuAttrValue -> skuAttrValue.setSkuId(skuInfo.getId()));
+            skuAttrValueService.saveBatch(skuAttrValueList);
         }
         if (skuSaleAttrValueList != null && skuSaleAttrValueList.size() > 0) {
             skuSaleAttrValueList.forEach(skuSaleAttrValue -> {
                 skuSaleAttrValue.setSkuId(skuInfo.getId());
                 skuSaleAttrValue.setSpuId(skuInfo.getSpuId());
-                skuSaleAttrValueMapper.insert(skuSaleAttrValue);
             });
+            skuSaleAttrValueService.saveBatch(skuSaleAttrValueList);
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void updateSale(Long skuId, int isSale) {
+        skuInfoMapper.updateSale(skuId, isSale);
+        // TODO: 2022/8/25 从ElasticSearch中更新商品出售情况
     }
 }
 

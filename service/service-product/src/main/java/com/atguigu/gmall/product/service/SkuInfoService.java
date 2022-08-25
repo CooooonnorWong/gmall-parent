@@ -17,4 +17,12 @@ public interface SkuInfoService extends IService<SkuInfo> {
      * @param skuInfo
      */
     void saveSkuInfo(SkuInfo skuInfo);
+
+    /**
+     * 更新在售情况
+     *
+     * @param skuId
+     * @param isSale
+     */
+    void updateSale(Long skuId, int isSale);
 }

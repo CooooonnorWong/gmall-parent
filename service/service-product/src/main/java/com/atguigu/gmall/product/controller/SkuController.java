@@ -49,7 +49,6 @@ public class SkuController {
     @ApiOperation("添加sku")
     public Result<Object> saveSkuInfo(@RequestBody SkuInfo skuInfo) {
         skuInfoService.saveSkuInfo(skuInfo);
-//        System.out.println(new Json(skuInfo.toString()).toString());
         return Result.ok();
     }
 
@@ -65,14 +64,14 @@ public class SkuController {
     @GetMapping("/onSale/{skuId}")
     @ApiOperation("上架")
     public Result<Object> onSale(@PathVariable Long skuId) {
-
+        skuInfoService.updateSale(skuId, 1);
         return Result.ok();
     }
 
     @GetMapping("/cancelSale/{skuId}")
     @ApiOperation("下架")
     public Result<Object> cancelSale(@PathVariable Long skuId) {
-
+        skuInfoService.updateSale(skuId, 0);
         return Result.ok();
     }
 }

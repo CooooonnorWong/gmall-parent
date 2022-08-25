@@ -8,6 +8,7 @@ import com.atguigu.gmall.product.service.BaseAttrInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class BaseAttrInfoServiceImpl extends ServiceImpl<BaseAttrInfoMapper, Bas
         return baseAttrInfoMapper.attrInfoList(category1Id, category2Id, category3Id);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveAttrInfo(BaseAttrInfo baseAttrInfo) {
         if (baseAttrInfo.getId() == null) {

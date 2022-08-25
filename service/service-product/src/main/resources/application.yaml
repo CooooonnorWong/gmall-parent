@@ -10,3 +10,11 @@ spring:
     base-url: http://192.168.6.200:9411
     sender:
       type: web
+gmall:
+  minio:
+    endpoint: http://192.168.6.200:9000
+    accessKey: admin
+    secretKey: adminadmin
+    bucketName: gmall
+    max-img-size: 5242880
+    max-video-size: 104857600

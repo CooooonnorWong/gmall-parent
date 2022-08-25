@@ -1,15 +1,15 @@
 package com.atguigu.gmall.product.service.impl;
 
 import com.atguigu.gmall.model.product.SpuInfo;
-import com.atguigu.gmall.product.mapper.SpuImageMapper;
 import com.atguigu.gmall.product.mapper.SpuInfoMapper;
-import com.atguigu.gmall.product.mapper.SpuSaleAttrMapper;
-import com.atguigu.gmall.product.mapper.SpuSaleAttrValueMapper;
+import com.atguigu.gmall.product.service.SpuImageService;
 import com.atguigu.gmall.product.service.SpuInfoService;
+import com.atguigu.gmall.product.service.SpuSaleAttrService;
+import com.atguigu.gmall.product.service.SpuSaleAttrValueService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Connor
@@ -20,34 +20,33 @@ import javax.annotation.Resource;
 public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoMapper, SpuInfo>
         implements SpuInfoService {
 
-    @Resource
-    private SpuImageMapper spuImageMapper;
-    @Resource
-    private SpuSaleAttrMapper spuSaleAttrMapper;
-    @Resource
-    private SpuSaleAttrValueMapper spuSaleAttrValueMapper;
+    @Autowired
+    private SpuImageService spuImageService;
+    @Autowired
+    private SpuSaleAttrService spuSaleAttrService;
+    @Autowired
+    private SpuSaleAttrValueService spuSaleAttrValueService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void saveSpuInfo(SpuInfo spuInfo) {
         this.save(spuInfo);
         if (spuInfo.getSpuImageList() != null && spuInfo.getSpuImageList().size() > 0) {
-            spuInfo.getSpuImageList().forEach(spuImage -> {
-                spuImage.setSpuId(spuInfo.getId());
-                spuImageMapper.insert(spuImage);
-            });
+            spuInfo.getSpuImageList().forEach(spuImage -> spuImage.setSpuId(spuInfo.getId()));
+            spuImageService.saveBatch(spuInfo.getSpuImageList());
         }
         if (spuInfo.getSpuSaleAttrList() != null && spuInfo.getSpuSaleAttrList().size() > 0) {
             spuInfo.getSpuSaleAttrList().forEach(spuSaleAttr -> {
                 spuSaleAttr.setSpuId(spuInfo.getId());
-                spuSaleAttrMapper.insert(spuSaleAttr);
                 if (spuSaleAttr.getSpuSaleAttrValueList() != null && spuSaleAttr.getSpuSaleAttrValueList().size() > 0) {
                     spuSaleAttr.getSpuSaleAttrValueList().forEach(spuSaleAttrValue -> {
                         spuSaleAttrValue.setSpuId(spuInfo.getId());
-                        spuSaleAttrValue.setBaseSaleAttrId(spuSaleAttr.getBaseSaleAttrId());
-                        spuSaleAttrValueMapper.insert(spuSaleAttrValue);
+                        spuSaleAttrValue.setSaleAttrName(spuSaleAttr.getSaleAttrName());
                     });
+                    spuSaleAttrValueService.saveBatch(spuSaleAttr.getSpuSaleAttrValueList());
                 }
             });
+            spuSaleAttrService.saveBatch(spuInfo.getSpuSaleAttrList());
         }
     }
 }
