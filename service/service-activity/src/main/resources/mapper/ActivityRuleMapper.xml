@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.gmall.activity.mapper.ActivityRuleMapper">
+
+    <resultMap id="BaseResultMap" type="com.atguigu.gmall.model.activity.ActivityRule">
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
+        <result property="conditionAmount" column="condition_amount" jdbcType="DECIMAL"/>
+        <result property="conditionNum" column="condition_num" jdbcType="BIGINT"/>
+        <result property="benefitAmount" column="benefit_amount" jdbcType="DECIMAL"/>
+        <result property="benefitDiscount" column="benefit_discount" jdbcType="DECIMAL"/>
+        <result property="benefitLevel" column="benefit_level" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,activity_id,condition_amount,
+        condition_num,benefit_amount,benefit_discount,
+        benefit_level
+    </sql>
+    <resultMap id="ActivityRuleList" type="com.atguigu.gmall.model.activity.ActivityRule" autoMapping="true">
+        <id column="id" property="id"/>
+        <collection property="skuIdList" ofType="long">
+            <result column="sku_id"/>
+        </collection>
+    </resultMap>
+    <select id="findActivityRuleList" resultMap="ActivityRuleList">
+        select acr.*, acs.sku_id, aci.activity_type
+        from activity_rule acr
+                 left join activity_sku acs
+                           on acr.activity_id = acs.activity_id
+                 left join activity_info aci
+                           on acr.activity_id = aci.id
+        where acr.activity_id = #{actInfoId}
+    </select>
+</mapper>
