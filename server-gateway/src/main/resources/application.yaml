@@ -26,3 +26,7 @@ spring:
           uri: lb://service-activity
           predicates:
             - Path=/admin/activity/**
+        - id: web-all
+          uri: lb://web-all
+          predicates:
+            - Host=**.gmall.com

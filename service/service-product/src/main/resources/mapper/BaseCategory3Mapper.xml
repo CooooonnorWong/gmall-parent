@@ -5,12 +5,26 @@
 <mapper namespace="com.atguigu.gmall.product.mapper.BaseCategory3Mapper">
 
     <resultMap id="BaseResultMap" type="com.atguigu.gmall.model.product.BaseCategory3">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="name" column="name" jdbcType="VARCHAR"/>
-            <result property="category2Id" column="category2_id" jdbcType="BIGINT"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="category2Id" column="category2_id" jdbcType="BIGINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,name,category2_id
     </sql>
+    <select id="getCategoryView" resultType="com.atguigu.gmall.model.to.CategoryViewTo">
+        select c1.id   category1Id,
+               c1.name category1Name,
+               c2.id   category2Id,
+               c2.name category2Name,
+               c3.id   category3Id,
+               c3.name category3Name
+        from gmall_product.base_category1 c1
+                 left join gmall_product.base_category2 c2
+                           on c1.id = c2.category1_id
+                 left join gmall_product.base_category3 c3
+                           on c2.id = c3.category2_id
+        where c3.id = #{category3Id}
+    </select>
 </mapper>

@@ -22,6 +22,15 @@ public interface SpuSaleAttrMapper extends BaseMapper<SpuSaleAttr> {
      * @return
      */
     List<SpuSaleAttr> getSpuSaleAttrList(@Param("spuId") Long spuId);
+
+    /**
+     * 获取销售属性,标记选择版本
+     *
+     * @param spuId
+     * @param skuId
+     * @return
+     */
+    List<SpuSaleAttr> getSpuSaleAttrListAndMarkCheck(@Param("spuId") Long spuId, @Param("skuId") Long skuId);
 }
 
 

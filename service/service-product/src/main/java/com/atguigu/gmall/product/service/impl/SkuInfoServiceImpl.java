@@ -1,15 +1,17 @@
 package com.atguigu.gmall.product.service.impl;
 
 
-import com.atguigu.gmall.model.product.SkuAttrValue;
-import com.atguigu.gmall.model.product.SkuImage;
-import com.atguigu.gmall.model.product.SkuInfo;
-import com.atguigu.gmall.model.product.SkuSaleAttrValue;
+import com.atguigu.gmall.model.product.*;
+import com.atguigu.gmall.model.to.CategoryViewTo;
+import com.atguigu.gmall.model.to.SkuDetailTo;
+import com.atguigu.gmall.product.mapper.BaseCategory3Mapper;
 import com.atguigu.gmall.product.mapper.SkuInfoMapper;
+import com.atguigu.gmall.product.mapper.SpuSaleAttrMapper;
 import com.atguigu.gmall.product.service.SkuAttrValueService;
 import com.atguigu.gmall.product.service.SkuImageService;
 import com.atguigu.gmall.product.service.SkuInfoService;
 import com.atguigu.gmall.product.service.SkuSaleAttrValueService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,10 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     private SkuSaleAttrValueService skuSaleAttrValueService;
     @Resource
     private SkuInfoMapper skuInfoMapper;
+    @Resource
+    private BaseCategory3Mapper baseCategory3Mapper;
+    @Resource
+    private SpuSaleAttrMapper spuSaleAttrMapper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -65,6 +71,25 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     public void updateSale(Long skuId, int isSale) {
         skuInfoMapper.updateSale(skuId, isSale);
         // TODO: 2022/8/25 从ElasticSearch中更新商品出售情况
+    }
+
+    @Override
+    public SkuDetailTo getSkuDetailToBySkuId(Long skuId) {
+        SkuDetailTo skuDetailTo = new SkuDetailTo();
+        //1.获取skuInfo
+        SkuInfo skuInfo = this.getById(skuId);
+        List<SkuImage> skuImageList = skuImageService.list(new LambdaQueryWrapper<SkuImage>().eq(SkuImage::getSkuId, skuId));
+        skuInfo.setSkuImageList(skuImageList);
+        skuDetailTo.setSkuInfo(skuInfo);
+        //2.获取categoryView
+        CategoryViewTo categoryViewTo = baseCategory3Mapper.getCategoryView(skuInfo.getCategory3Id());
+        skuDetailTo.setCategoryViewTo(categoryViewTo);
+        //3.获取spuSaleAttrList
+        List<SpuSaleAttr> spuSaleAttrList = spuSaleAttrMapper.getSpuSaleAttrListAndMarkCheck(skuInfo.getSpuId(), skuId);
+        skuDetailTo.setSpuSaleAttrList(spuSaleAttrList);
+        skuDetailTo.setPrice(skuInfo.getPrice());
+
+        return skuDetailTo;
     }
 }
 

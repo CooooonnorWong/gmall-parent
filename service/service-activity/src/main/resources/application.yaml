@@ -2,7 +2,7 @@ server:
   port: 9001
 spring:
   zipkin:
-    base-url: 192.168.6.200:9411
+    base-url: http://192.168.6.200:9411
     sender:
       type: web
   datasource:

@@ -1,0 +1,9 @@
+server:
+  port: 9002
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  zipkin:
+    base-url: http://192.168.6.200:9411
+    sender:
+      type: web
