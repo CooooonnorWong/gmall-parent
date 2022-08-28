@@ -7,3 +7,17 @@ spring:
     base-url: http://192.168.6.200:9411
     sender:
       type: web
+  redis:
+    password: Lfy123456
+    host: 192.168.6.200
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+gmall:
+  thread-pool:
+    corePoolSize: 4
+    maximumPoolSize: 8
+    queueCapacity: 2000
+    keepAliveTime: 300

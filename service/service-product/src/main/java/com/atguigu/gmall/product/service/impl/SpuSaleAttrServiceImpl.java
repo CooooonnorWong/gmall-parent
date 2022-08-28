@@ -1,7 +1,9 @@
 package com.atguigu.gmall.product.service.impl;
 
 
+import com.atguigu.gmall.common.util.Jsons;
 import com.atguigu.gmall.model.product.SpuSaleAttr;
+import com.atguigu.gmall.model.to.ValueSkuJsonTo;
 import com.atguigu.gmall.product.mapper.SpuSaleAttrMapper;
 import com.atguigu.gmall.product.service.SpuSaleAttrService;
 import com.atguigu.gmall.product.service.SpuSaleAttrValueService;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Connor
@@ -38,6 +42,19 @@ public class SpuSaleAttrServiceImpl extends ServiceImpl<SpuSaleAttrMapper, SpuSa
 //        });
         return spuSaleAttrMapper.getSpuSaleAttrList(spuId);
     }
+
+    @Override
+    public List<SpuSaleAttr> getSpuSaleAttrListAndMarkCheck(Long spuId, Long skuId) {
+        return baseMapper.getSpuSaleAttrListAndMarkCheck(spuId, skuId);
+    }
+
+    @Override
+    public String getValueSkuJson(Long spuId) {
+        List<ValueSkuJsonTo> list = baseMapper.getValueSkuJson(spuId);
+        Map<String, Long> map = list.stream().collect(Collectors.toMap(ValueSkuJsonTo::getValueSkuJson, ValueSkuJsonTo::getSkuId));
+        return Jsons.toStr(map);
+    }
+
 }
 
 

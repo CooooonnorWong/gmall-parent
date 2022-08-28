@@ -30,6 +30,6 @@ public class SkuDetailServiceImpl implements SkuDetailService {
         model.addAttribute("skuInfo", to.getSkuInfo());
         model.addAttribute("spuSaleAttrList", to.getSpuSaleAttrList());
         model.addAttribute("price", to.getPrice());
-        model.addAttribute("valueSkuJson", to.getValueSkuJson());
+        model.addAttribute("valuesSkuJson", to.getValueSkuJson());
     }
 }

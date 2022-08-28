@@ -1,7 +1,7 @@
 package com.atguigu.gmall.product.service.impl;
 
 import com.atguigu.gmall.common.util.DateUtil;
-import com.atguigu.gmall.product.config.MinioProperties;
+import com.atguigu.gmall.common.config.minio.MinioProperties;
 import com.atguigu.gmall.product.service.FileUploadService;
 import io.minio.MinioClient;
 import io.minio.PutObjectOptions;

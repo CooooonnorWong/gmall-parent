@@ -1,4 +1,4 @@
-package com.atguigu.gmall.product.config;
+package com.atguigu.gmall.common.config.minio;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

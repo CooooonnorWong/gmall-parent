@@ -29,12 +29,13 @@
 
     <select id="getSpuSaleAttrList" resultMap="SpuSaleAttrList">
         select ssa.*,
-               sav.id savId,
-               sav.sale_attr_value_name
+               ssav.id savId,
+               ssav.sale_attr_value_name
         from gmall_product.spu_sale_attr ssa
-                 left join gmall_product.spu_sale_attr_value sav
-                           on ssa.spu_id = sav.spu_id and ssa.base_sale_attr_id = sav.base_sale_attr_id
+                 left join gmall_product.spu_sale_attr_value ssav
+                           on ssa.spu_id = ssav.spu_id and ssa.base_sale_attr_id = ssav.base_sale_attr_id
         where ssa.spu_id = #{spuId}
+        order by ssa.id, ssav.id
     </select>
 
     <select id="getSpuSaleAttrListAndMarkCheck" resultMap="SpuSaleAttrList">
@@ -47,6 +48,26 @@
                            on ssa.spu_id = ssav.spu_id and ssa.base_sale_attr_id = ssav.base_sale_attr_id
                  left join gmall_product.sku_sale_attr_value skuv
                            on ssav.id = skuv.sale_attr_value_id and skuv.sku_id = #{skuId}
-        where ssa.spu_id = #{spuId};
+        where ssa.spu_id = #{spuId}
+        order by ssa.id, ssav.id
+    </select>
+
+    <select id="getValueSkuJson" resultType="com.atguigu.gmall.model.to.ValueSkuJsonTo">
+        select result.sku_id,
+               group_concat(DISTINCT result.spuSaleAttrValueId
+                            ORDER BY result.spuSaleAttrValueId
+                            ASC
+                            SEPARATOR '|')
+                   valueSkuJson
+        from (select ski.id                   sku_id,
+                     skuav.sale_attr_value_id spuSaleAttrValueId
+              from gmall_product.sku_info ski
+                       left join gmall_product.sku_sale_attr_value skuav
+                                 on ski.id = skuav.sku_id
+                       left join gmall_product.spu_sale_attr_value spuav
+                                 on skuav.sale_attr_value_id = spuav.id
+              where ski.spu_id = #{spuId}
+              order by ski.id, spuav.base_sale_attr_id, skuav.sale_attr_value_id) result
+        group by result.sku_id
     </select>
 </mapper>

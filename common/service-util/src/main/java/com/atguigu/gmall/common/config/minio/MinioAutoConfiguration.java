@@ -1,4 +1,4 @@
-package com.atguigu.gmall.product.config;
+package com.atguigu.gmall.common.config.minio;
 
 import io.minio.MinioClient;
 import io.minio.errors.InvalidEndpointException;
@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
  */
 @SpringBootConfiguration
 @EnableConfigurationProperties(MinioProperties.class)
-public class MinioConfiguration {
+public class MinioAutoConfiguration {
     @Autowired
     private MinioProperties minioProperties;
 

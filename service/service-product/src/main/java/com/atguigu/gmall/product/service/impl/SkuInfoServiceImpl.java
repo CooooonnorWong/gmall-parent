@@ -4,20 +4,15 @@ package com.atguigu.gmall.product.service.impl;
 import com.atguigu.gmall.model.product.*;
 import com.atguigu.gmall.model.to.CategoryViewTo;
 import com.atguigu.gmall.model.to.SkuDetailTo;
-import com.atguigu.gmall.product.mapper.BaseCategory3Mapper;
 import com.atguigu.gmall.product.mapper.SkuInfoMapper;
-import com.atguigu.gmall.product.mapper.SpuSaleAttrMapper;
-import com.atguigu.gmall.product.service.SkuAttrValueService;
-import com.atguigu.gmall.product.service.SkuImageService;
-import com.atguigu.gmall.product.service.SkuInfoService;
-import com.atguigu.gmall.product.service.SkuSaleAttrValueService;
+import com.atguigu.gmall.product.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -35,12 +30,10 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     private SkuAttrValueService skuAttrValueService;
     @Autowired
     private SkuSaleAttrValueService skuSaleAttrValueService;
-    @Resource
-    private SkuInfoMapper skuInfoMapper;
-    @Resource
-    private BaseCategory3Mapper baseCategory3Mapper;
-    @Resource
-    private SpuSaleAttrMapper spuSaleAttrMapper;
+    @Autowired
+    private SpuSaleAttrService spuSaleAttrService;
+    @Autowired
+    private BaseCategory3Service baseCategory3Service;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -69,10 +62,11 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateSale(Long skuId, int isSale) {
-        skuInfoMapper.updateSale(skuId, isSale);
+        baseMapper.updateSale(skuId, isSale);
         // TODO: 2022/8/25 从ElasticSearch中更新商品出售情况
     }
 
+    @Deprecated
     @Override
     public SkuDetailTo getSkuDetailToBySkuId(Long skuId) {
         SkuDetailTo skuDetailTo = new SkuDetailTo();
@@ -82,15 +76,48 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         skuInfo.setSkuImageList(skuImageList);
         skuDetailTo.setSkuInfo(skuInfo);
         //2.获取categoryView
-        CategoryViewTo categoryViewTo = baseCategory3Mapper.getCategoryView(skuInfo.getCategory3Id());
+        CategoryViewTo categoryViewTo = baseCategory3Service.getCategoryView(skuInfo.getCategory3Id());
         skuDetailTo.setCategoryViewTo(categoryViewTo);
         //3.获取spuSaleAttrList
-        List<SpuSaleAttr> spuSaleAttrList = spuSaleAttrMapper.getSpuSaleAttrListAndMarkCheck(skuInfo.getSpuId(), skuId);
+        List<SpuSaleAttr> spuSaleAttrList = spuSaleAttrService.getSpuSaleAttrListAndMarkCheck(skuInfo.getSpuId(), skuId);
         skuDetailTo.setSpuSaleAttrList(spuSaleAttrList);
         skuDetailTo.setPrice(skuInfo.getPrice());
-
+        //4.获取valueSkuJson
+        skuDetailTo.setValueSkuJson(spuSaleAttrService.getValueSkuJson(skuInfo.getSpuId()));
         return skuDetailTo;
     }
+
+    @Override
+    public CategoryViewTo getCategoryViewTo(Long category3Id) {
+        return baseCategory3Service.getCategoryView(category3Id);
+    }
+
+    @Override
+    public SkuInfo getSkuInfo(Long skuId) {
+        return this.getById(skuId);
+    }
+
+    @Override
+    public List<SkuImage> getSkuImageList(Long skuId) {
+        return skuImageService.list(new LambdaQueryWrapper<SkuImage>().eq(SkuImage::getSkuId, skuId));
+    }
+
+    @Override
+    public List<SpuSaleAttr> getSpuSaleAttrList(Long spuId, Long skuId) {
+        return spuSaleAttrService.getSpuSaleAttrListAndMarkCheck(spuId, skuId);
+    }
+
+    @Override
+    public String getValueSkuJson(Long spuId) {
+        return spuSaleAttrService.getValueSkuJson(spuId);
+    }
+
+    @Override
+    public BigDecimal getRealTimePrice(Long skuId) {
+        return baseMapper.getRealTimePrice(skuId);
+    }
+
+
 }
 
 

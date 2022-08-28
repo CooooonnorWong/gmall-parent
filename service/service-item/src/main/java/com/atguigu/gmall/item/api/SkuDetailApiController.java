@@ -23,7 +23,7 @@ public class SkuDetailApiController {
 
     @GetMapping("/skudetail/{skuId}")
     public Result<SkuDetailTo> getSkuDetailTo(@PathVariable Long skuId) {
-        SkuDetailTo skuDetailTo = skuDetailService.getSkuDetailTo(skuId);
+        SkuDetailTo skuDetailTo = skuDetailService.getSkuDetailToAsync(skuId);
         return Result.ok(skuDetailTo);
     }
 }

@@ -13,5 +13,14 @@ public interface SkuDetailService {
      * @param skuId
      * @return
      */
+    @Deprecated
     SkuDetailTo getSkuDetailTo(Long skuId);
+
+    /**
+     * 异步获取商品详情页信息
+     *
+     * @param skuId
+     * @return
+     */
+    SkuDetailTo getSkuDetailToAsync(Long skuId);
 }
