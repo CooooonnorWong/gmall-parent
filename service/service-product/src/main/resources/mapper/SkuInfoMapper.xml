@@ -34,4 +34,8 @@
         from gmall_product.sku_info
         where id = #{skuId}
     </select>
+    <select id="getSkuIdList" resultType="java.lang.Long">
+        select id
+        from gmall_product.sku_info
+    </select>
 </mapper>

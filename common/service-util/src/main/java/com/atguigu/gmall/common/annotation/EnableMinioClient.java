@@ -1,4 +1,4 @@
-package com.atguigu.gmall.common.config.annotation;
+package com.atguigu.gmall.common.annotation;
 
 import com.atguigu.gmall.common.config.minio.MinioAutoConfiguration;
 import org.springframework.context.annotation.Import;

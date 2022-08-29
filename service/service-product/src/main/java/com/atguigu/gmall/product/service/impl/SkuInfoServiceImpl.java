@@ -117,6 +117,11 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         return baseMapper.getRealTimePrice(skuId);
     }
 
+    @Override
+    public List<Long> getSkuIdList() {
+        return baseMapper.getSkuIdList();
+    }
+
 
 }
 

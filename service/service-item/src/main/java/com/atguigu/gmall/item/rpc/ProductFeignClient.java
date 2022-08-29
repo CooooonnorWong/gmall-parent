@@ -95,4 +95,11 @@ public interface ProductFeignClient {
     @GetMapping("/skuImageList/{skuId}")
     Result<List<SkuImage>> getSkuImageList(@PathVariable Long skuId);
 
+    /**
+     * 获取商品id集合
+     *
+     * @return
+     */
+    @GetMapping("/skuIdList")
+    Result<List<Long>> getSkuIdList();
 }

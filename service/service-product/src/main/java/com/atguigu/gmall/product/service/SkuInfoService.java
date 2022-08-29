@@ -90,4 +90,11 @@ public interface SkuInfoService extends IService<SkuInfo> {
      * @return
      */
     BigDecimal getRealTimePrice(Long skuId);
+
+    /**
+     * 获取商品id集合
+     *
+     * @return
+     */
+    List<Long> getSkuIdList();
 }

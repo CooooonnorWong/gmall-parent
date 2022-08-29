@@ -1,6 +1,5 @@
 package com.atguigu.gmall.common.config.threadpool;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -15,13 +14,11 @@ import java.util.concurrent.*;
 @Component
 @EnableConfigurationProperties(ThreadPoolProperties.class)
 public class ThreadPoolAutoConfiguration {
-    @Autowired
-    private ThreadPoolProperties poolProperties;
     @Value("${spring.application.name}")
     private String applicationName;
 
     @Bean
-    public ExecutorService threadPool() {
+    public ExecutorService threadPool(ThreadPoolProperties poolProperties) {
         return new ThreadPoolExecutor(poolProperties.getCorePoolSize(),
                 poolProperties.getMaximumPoolSize(),
                 poolProperties.getKeepAliveTime(),
