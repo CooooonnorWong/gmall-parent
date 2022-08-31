@@ -1,7 +1,7 @@
 server:
   port: 9002
-#  tomcat:
-#    max-connections: 200
+  tomcat:
+    max-connections: 200
 spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration

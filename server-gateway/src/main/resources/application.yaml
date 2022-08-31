@@ -26,6 +26,10 @@ spring:
           uri: lb://service-activity
           predicates:
             - Path=/admin/activity/**
+        - id: service-item
+          uri: lb://service-item
+          predicates:
+            - Path=/lock/**
         - id: web-all
           uri: lb://web-all
           predicates:
