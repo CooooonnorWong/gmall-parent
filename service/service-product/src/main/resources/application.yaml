@@ -25,4 +25,4 @@ gmall:
     max-video-size: 104857600
   bloom-filter:
     fpp: 0.0001
-    expected-insertions: 500000
+    expected-insertions: 5000000

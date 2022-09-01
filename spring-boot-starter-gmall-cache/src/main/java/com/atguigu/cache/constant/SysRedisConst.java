@@ -1,4 +1,4 @@
-package com.atguigu.gmall.common.constant;
+package com.atguigu.cache.constant;
 
 /**
  * @author Connor
@@ -12,4 +12,5 @@ public interface SysRedisConst {
     Long SKUDETAIL_TTL = 60 * 60 * 24 * 7L;
     String BLOOM_SKUID = "bloom:skuid";
     String LOCK_PREFIX = "lock:";
+    String CACHE_CATEGORY_TREE = "category:tree";
 }

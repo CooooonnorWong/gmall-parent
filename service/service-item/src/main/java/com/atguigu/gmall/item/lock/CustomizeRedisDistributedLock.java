@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2022/8/31
  */
 @Component
-public class RedisDistributeLock {
+public class CustomizeRedisDistributedLock {
     @Autowired
     private StringRedisTemplate redisTemplate;
 

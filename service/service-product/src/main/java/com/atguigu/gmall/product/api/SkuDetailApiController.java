@@ -71,9 +71,9 @@ public class SkuDetailApiController {
         return Result.ok(skuImageList);
     }
 
-    @GetMapping("/skuIdList")
-    public Result<List<Long>> getSkuIdList() {
-        List<Long> list = skuInfoService.getSkuIdList();
-        return Result.ok(list);
-    }
+//    @GetMapping("/skuIdList")
+//    public Result<List<Long>> getSkuIdList() {
+//        List<Long> list = skuInfoService.getSkuIdList();
+//        return Result.ok(list);
+//    }
 }

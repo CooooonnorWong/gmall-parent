@@ -1,5 +1,7 @@
 package com.atguigu.gmall.item.service.impl;
 
+import com.atguigu.cache.annotation.GmallCache;
+import com.atguigu.cache.constant.SysRedisConst;
 import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
@@ -20,6 +22,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Resource
     private ProductFeignClient productFeignClient;
 
+    @GmallCache(cacheKey = SysRedisConst.CACHE_CATEGORY_TREE)
     @Override
     public List<CategoryTreeTo> getCategoryTree() {
         Result<List<CategoryTreeTo>> result = productFeignClient.getCategoryTree();

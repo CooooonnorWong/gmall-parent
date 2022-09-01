@@ -1,10 +1,8 @@
-package com.atguigu.gmall.common.util;
+package com.atguigu.cache.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.istack.internal.NotNull;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Connor
@@ -19,12 +17,12 @@ public class Jsons {
      * @param object
      * @return
      */
-    public static String toStr(@NotNull Object object) {
+    public static String toStr(Object object) {
         //jackson
         try {
             return MAPPER.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            return StringUtils.EMPTY;
+            return "";
         }
     }
 
@@ -36,7 +34,7 @@ public class Jsons {
         }
     }
 
-    public static<T> T toObj(String jsonStr, TypeReference<T> typeReference) {
+    public static <T> T toObj(String jsonStr, TypeReference<T> typeReference) {
         try {
             return MAPPER.readValue(jsonStr, typeReference);
         } catch (JsonProcessingException e) {

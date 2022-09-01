@@ -1,10 +1,12 @@
 package com.atguigu.gmall.item.service.impl;
 
-import com.atguigu.gmall.common.constant.SysRedisConst;
+
+import com.atguigu.cache.annotation.GmallCache;
+import com.atguigu.cache.constant.SysRedisConst;
+import com.atguigu.cache.service.CacheOpsService;
 import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
-import com.atguigu.gmall.item.cache.CacheOpsService;
 import com.atguigu.gmall.item.rpc.ProductFeignClient;
 import com.atguigu.gmall.item.service.SkuDetailService;
 import com.atguigu.gmall.model.product.SkuImage;
@@ -14,7 +16,6 @@ import com.atguigu.gmall.model.to.CategoryViewTo;
 import com.atguigu.gmall.model.to.SkuDetailTo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -34,54 +35,15 @@ public class SkuDetailServiceImpl implements SkuDetailService {
     @Autowired
     private ExecutorService executor;
     @Autowired
-    private StringRedisTemplate redisTemplate;
-    @Autowired
     private CacheOpsService cacheOpsService;
-//    @Autowired
-//    private BloomFilter<Long> filter;
 
-    @Deprecated
+    @GmallCache(cacheKey = SysRedisConst.SKU_INFO_PREFIX + "#{#params[0]}",
+            bloomName = SysRedisConst.BLOOM_SKUID,
+            bloomValue = "#{#params[0]}",
+            lockName = SysRedisConst.LOCK_SKU_DETAIL + "#{#params[0]}")
     @Override
-    public SkuDetailTo getSkuDetailTo(Long skuId) {
-        Result<SkuDetailTo> result = productFeignClient.getSkuDetailTo(skuId);
-        if (!result.isOk()) {
-            throw new GmallException(ResultCodeEnum.SERVICE_ERROR);
-        }
-        return result.getData();
-    }
-
-//    @PostConstruct
-//    public void init() {
-//        Result<List<Long>> skuIdList = productFeignClient.getSkuIdList();
-//        if (skuIdList.isOk() && skuIdList.getData() != null && skuIdList.getData().size() > 0) {
-//            skuIdList.getData().forEach(id -> filter.put(id));
-//        }
-//    }
-
-    @Override
-    public SkuDetailTo getSkuDetailToAsync(Long skuId) {
-        String cacheKey = SysRedisConst.SKU_INFO_PREFIX + skuId;
-        SkuDetailTo skuDetailTo = cacheOpsService.getCacheData(cacheKey, SkuDetailTo.class);
-        if (skuDetailTo == null) {
-            if (!cacheOpsService.isBloomContains(skuId)) {
-                log.info("[{}]商品 -布隆未命中 --检测到隐藏的攻击风险....",skuId);
-                return null;
-            }
-            if (cacheOpsService.tryLock(skuId)) {
-                log.info("[{}]商品 -缓存未命中 -布隆命中 --准备回源.....",skuId);
-                SkuDetailTo detail = getDetailRpc(skuId);
-                cacheOpsService.saveData(cacheKey, detail);
-                cacheOpsService.unlock(skuId);
-                return detail;
-            }
-            try {
-                Thread.sleep(1000);
-                return cacheOpsService.getCacheData(cacheKey, SkuDetailTo.class);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        return skuDetailTo;
+    public SkuDetailTo getSkuDetailToAsyncAspect(Long skuId) {
+        return getDetailRpc(skuId);
     }
 
     private SkuDetailTo getDetailRpc(Long skuId) {
@@ -121,6 +83,43 @@ public class SkuDetailServiceImpl implements SkuDetailService {
         }, executor);
         CompletableFuture.allOf(skuImageFuture, priceFuture, attrListFuture, skuJsonFuture, viewToFuture).join();
         return detail;
+    }
+
+    @Deprecated
+    @Override
+    public SkuDetailTo getSkuDetailTo(Long skuId) {
+        Result<SkuDetailTo> result = productFeignClient.getSkuDetailTo(skuId);
+        if (!result.isOk()) {
+            throw new GmallException(ResultCodeEnum.SERVICE_ERROR);
+        }
+        return result.getData();
+    }
+
+    @Deprecated
+    @Override
+    public SkuDetailTo getSkuDetailToAsync(Long skuId) {
+        String cacheKey = SysRedisConst.SKU_INFO_PREFIX + skuId;
+        SkuDetailTo skuDetailTo = cacheOpsService.getCacheData(cacheKey, SkuDetailTo.class);
+        if (skuDetailTo == null) {
+            if (!cacheOpsService.isBloomContains(SysRedisConst.BLOOM_SKUID, skuId)) {
+                log.info("[{}]商品 -布隆未命中 --检测到隐藏的攻击风险....", skuId);
+                return null;
+            }
+            if (cacheOpsService.tryLock(SysRedisConst.LOCK_SKU_DETAIL + skuId)) {
+                log.info("[{}]商品 -缓存未命中 -布隆命中 --准备回源.....", skuId);
+                SkuDetailTo detail = getDetailRpc(skuId);
+                cacheOpsService.saveData(cacheKey, detail);
+                cacheOpsService.unlock(SysRedisConst.LOCK_SKU_DETAIL + skuId);
+                return detail;
+            }
+            try {
+                Thread.sleep(1000);
+                return cacheOpsService.getCacheData(cacheKey, SkuDetailTo.class);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return skuDetailTo;
     }
 
 
