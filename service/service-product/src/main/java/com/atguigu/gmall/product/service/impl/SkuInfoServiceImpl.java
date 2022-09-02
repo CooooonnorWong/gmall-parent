@@ -1,7 +1,7 @@
 package com.atguigu.gmall.product.service.impl;
 
 
-import com.atguigu.gmall.common.constant.SysRedisConst;
+import com.atguigu.cache.constant.SysRedisConst;
 import com.atguigu.gmall.model.product.*;
 import com.atguigu.gmall.model.to.CategoryViewTo;
 import com.atguigu.gmall.model.to.SkuDetailTo;
@@ -9,7 +9,6 @@ import com.atguigu.gmall.product.mapper.SkuInfoMapper;
 import com.atguigu.gmall.product.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,8 +61,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
             });
             skuSaleAttrValueService.saveBatch(skuSaleAttrValueList);
         }
-        RBloomFilter<Object> filter = redissonClient.getBloomFilter(SysRedisConst.BLOOM_SKUID);
-        filter.add(skuInfo.getId());
+        redissonClient.getBloomFilter(SysRedisConst.BLOOM_SKUID).add(skuInfo.getId());
 
     }
 

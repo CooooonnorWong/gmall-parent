@@ -10,7 +10,6 @@ import org.redisson.config.Config;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -23,10 +22,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
  */
 @EnableAspectJAutoProxy
 @AutoConfigureAfter(RedisAutoConfiguration.class)
-@EnableConfigurationProperties(RedisProperties.class)
 @Configuration
 public class MallCacheAutoConfiguration {
-
     @Bean
     public CacheAspect cacheAspect() {
         return new CacheAspect();
@@ -41,18 +38,14 @@ public class MallCacheAutoConfiguration {
     public RedissonClient redissonClient(RedisProperties redisProperties) {
         //1、创建一个配置
         Config config = new Config();
-        String host = redisProperties.getHost();
-        int port = redisProperties.getPort();
-        String password = redisProperties.getPassword();
         //2、指定好redisson的配置项
         config.useSingleServer()
-                .setAddress("redis://" + host + ":" + port)
-                .setPassword(password);
+                .setAddress("redis://" + redisProperties.getHost() + ":" + redisProperties.getPort())
+                .setPassword(redisProperties.getPassword());
 
         //3、创建一个 RedissonClient
-        RedissonClient client = Redisson.create(config);
         //Redis url should start with redis:// or rediss:// (for SSL connection)
 
-        return client;
+        return Redisson.create(config);
     }
 }

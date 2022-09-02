@@ -1,9 +1,8 @@
 package com.atguigu.gmall.product;
 
-import com.atguigu.gmall.common.annotation.EnableRedissonClient;
+import com.atguigu.gmall.common.annotation.EnableMinioClient;
 import com.atguigu.gmall.common.config.MybatisPlusConfig;
 import com.atguigu.gmall.common.config.Swagger2Config;
-import com.atguigu.gmall.common.annotation.EnableMinioClient;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
@@ -18,7 +17,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @EnableMinioClient
 @MapperScan("com.atguigu.gmall.product.mapper")
-@EnableRedissonClient
 @Import({Swagger2Config.class, MybatisPlusConfig.class})
 public class ProductMainApplication {
     public static void main(String[] args) {
