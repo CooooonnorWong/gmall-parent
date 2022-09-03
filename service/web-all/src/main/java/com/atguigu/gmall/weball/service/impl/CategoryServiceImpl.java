@@ -4,8 +4,8 @@ package com.atguigu.gmall.weball.service.impl;
 import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
+import com.atguigu.gmall.feign.item.ItemFeignClient;
 import com.atguigu.gmall.model.to.CategoryTreeTo;
-import com.atguigu.gmall.weball.rpc.ItemFeignClient;
 import com.atguigu.gmall.weball.service.CategoryService;
 import org.springframework.stereotype.Service;
 

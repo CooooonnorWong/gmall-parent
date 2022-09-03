@@ -25,17 +25,17 @@
     </sql>
 
     <update id="updateSale">
-        update gmall_product.sku_info
+        update sku_info
         set is_sale = #{isSale}
         where id = #{skuId}
     </update>
     <select id="getRealTimePrice" resultType="java.math.BigDecimal">
         select price
-        from gmall_product.sku_info
+        from sku_info
         where id = #{skuId}
     </select>
     <select id="getSkuIdList" resultType="java.lang.Long">
         select id
-        from gmall_product.sku_info
+        from sku_info
     </select>
 </mapper>

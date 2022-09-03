@@ -31,8 +31,8 @@
         select ssa.*,
                ssav.id savId,
                ssav.sale_attr_value_name
-        from gmall_product.spu_sale_attr ssa
-                 left join gmall_product.spu_sale_attr_value ssav
+        from spu_sale_attr ssa
+                 left join spu_sale_attr_value ssav
                            on ssa.spu_id = ssav.spu_id and ssa.base_sale_attr_id = ssav.base_sale_attr_id
         where ssa.spu_id = #{spuId}
         order by ssa.id, ssav.id
@@ -43,10 +43,10 @@
                ssav.id                                       savId,
                ssav.sale_attr_value_name,
                if(skuv.sale_attr_value_id is null, '0', '1') is_checked
-        from gmall_product.spu_sale_attr ssa
-                 left join gmall_product.spu_sale_attr_value ssav
+        from spu_sale_attr ssa
+                 left join spu_sale_attr_value ssav
                            on ssa.spu_id = ssav.spu_id and ssa.base_sale_attr_id = ssav.base_sale_attr_id
-                 left join gmall_product.sku_sale_attr_value skuv
+                 left join sku_sale_attr_value skuv
                            on ssav.id = skuv.sale_attr_value_id and skuv.sku_id = #{skuId}
         where ssa.spu_id = #{spuId}
         order by ssa.id, ssav.id
@@ -61,10 +61,10 @@
                    valueSkuJson
         from (select ski.id                   sku_id,
                      skuav.sale_attr_value_id spuSaleAttrValueId
-              from gmall_product.sku_info ski
-                       left join gmall_product.sku_sale_attr_value skuav
+              from sku_info ski
+                       left join sku_sale_attr_value skuav
                                  on ski.id = skuav.sku_id
-                       left join gmall_product.spu_sale_attr_value spuav
+                       left join spu_sale_attr_value spuav
                                  on skuav.sale_attr_value_id = spuav.id
               where ski.spu_id = #{spuId}
               order by ski.id, spuav.base_sale_attr_id, skuav.sale_attr_value_id) result

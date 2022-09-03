@@ -31,10 +31,10 @@
                c2.name c2_name,
                c3.id   c3_id,
                c3.name c3_name
-        from gmall_product.base_category1 c1
-                 left join gmall_product.base_category2 c2
+        from base_category1 c1
+                 left join base_category2 c2
                            on c1.id = c2.category1_id
-                 left join gmall_product.base_category3 c3
+                 left join base_category3 c3
                            on c2.id = c3.category2_id
     </select>
 </mapper>

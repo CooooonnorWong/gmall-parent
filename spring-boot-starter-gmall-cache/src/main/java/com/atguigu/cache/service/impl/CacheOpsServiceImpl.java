@@ -63,11 +63,11 @@ public class CacheOpsServiceImpl implements CacheOpsService {
     }
 
     @Override
-    public void saveData(String cacheKey, Object data) {
+    public void saveData(String cacheKey, Object data,Long cacheTTL) {
         if (data != null) {
-            redisTemplate.opsForValue().set(cacheKey, Jsons.toStr(data), SysRedisConst.SKUDETAIL_TTL, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(cacheKey, Jsons.toStr(data), cacheTTL, TimeUnit.SECONDS);
         } else {
-            redisTemplate.opsForValue().set(cacheKey, SysRedisConst.NULL_VAL, SysRedisConst.NULL_VAL_TTL, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(cacheKey, SysRedisConst.NULL_VAL, cacheTTL, TimeUnit.SECONDS);
         }
     }
 

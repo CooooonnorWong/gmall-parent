@@ -5,7 +5,7 @@ import com.atguigu.cache.constant.SysRedisConst;
 import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
-import com.atguigu.gmall.item.rpc.ProductFeignClient;
+import com.atguigu.gmall.feign.product.ProductFeignClient;
 import com.atguigu.gmall.item.service.CategoryService;
 import com.atguigu.gmall.model.to.CategoryTreeTo;
 import org.springframework.stereotype.Service;

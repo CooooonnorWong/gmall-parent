@@ -39,13 +39,13 @@ public class CacheAspect {
         String lockName = null;
         try {
             //1.前置通知
-              //1.1查缓存
+            //1.1查缓存
             Object cacheData = cacheOpsService.getCacheData(cacheKey, genericReturnType);
             if (cacheData != null) {
                 log.info("缓存 - 存在");
                 return cacheData;
             }
-              //1.2查布隆(需要查布隆的查,不需要的不查)
+            //1.2查布隆(需要查布隆的查,不需要的不查)
             String bloomName = getBloomName(joinPoint);
             if (!StringUtils.isEmpty(bloomName)) {
                 Object bloomValue = getBloomValue(joinPoint);
@@ -60,7 +60,8 @@ public class CacheAspect {
             if (lock) {
                 log.info("布隆过滤器 - 存在 --回源中");
                 Object proceed = joinPoint.proceed(joinPoint.getArgs());
-                cacheOpsService.saveData(cacheKey, proceed);
+                Long cacheTTL = getCacheTTL(joinPoint);
+                cacheOpsService.saveData(cacheKey, proceed, cacheTTL);
                 return proceed;
             } else {
                 Thread.sleep(1000);
@@ -76,6 +77,17 @@ public class CacheAspect {
                 cacheOpsService.unlock(lockName);
             }
         }
+    }
+
+    /**
+     * 获取缓存过期时间
+     *
+     * @param joinPoint
+     * @return
+     */
+    private Long getCacheTTL(ProceedingJoinPoint joinPoint) {
+        MethodSignature signature = getMethodSignature(joinPoint);
+        return signature.getMethod().getAnnotation(GmallCache.class).cacheTTL();
     }
 
     /**

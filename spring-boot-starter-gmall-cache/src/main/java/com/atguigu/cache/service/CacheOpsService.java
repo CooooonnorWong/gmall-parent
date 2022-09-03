@@ -49,7 +49,7 @@ public interface CacheOpsService {
      * @param cacheKey
      * @param data
      */
-    void saveData(String cacheKey, Object data);
+    void saveData(String cacheKey, Object data,Long cacheTTL);
 
     /**
      * 布隆过滤器判断商品是否存在

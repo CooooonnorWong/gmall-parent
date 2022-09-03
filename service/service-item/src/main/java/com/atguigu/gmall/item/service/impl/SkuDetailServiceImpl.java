@@ -7,7 +7,7 @@ import com.atguigu.cache.service.CacheOpsService;
 import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
-import com.atguigu.gmall.item.rpc.ProductFeignClient;
+import com.atguigu.gmall.feign.product.ProductFeignClient;
 import com.atguigu.gmall.item.service.SkuDetailService;
 import com.atguigu.gmall.model.product.SkuImage;
 import com.atguigu.gmall.model.product.SkuInfo;
@@ -38,6 +38,7 @@ public class SkuDetailServiceImpl implements SkuDetailService {
     private CacheOpsService cacheOpsService;
 
     @GmallCache(cacheKey = SysRedisConst.SKU_INFO_PREFIX + "#{#params[0]}",
+            cacheTTL = 60L * 60 * 24 * 7,
             bloomName = SysRedisConst.BLOOM_SKUID,
             bloomValue = "#{#params[0]}",
             lockName = SysRedisConst.LOCK_SKU_DETAIL + "#{#params[0]}")
@@ -108,7 +109,7 @@ public class SkuDetailServiceImpl implements SkuDetailService {
             if (cacheOpsService.tryLock(SysRedisConst.LOCK_SKU_DETAIL + skuId)) {
                 log.info("[{}]商品 -缓存未命中 -布隆命中 --准备回源.....", skuId);
                 SkuDetailTo detail = getDetailRpc(skuId);
-                cacheOpsService.saveData(cacheKey, detail);
+                cacheOpsService.saveData(cacheKey, detail, SysRedisConst.SKUDETAIL_TTL);
                 cacheOpsService.unlock(SysRedisConst.LOCK_SKU_DETAIL + skuId);
                 return detail;
             }

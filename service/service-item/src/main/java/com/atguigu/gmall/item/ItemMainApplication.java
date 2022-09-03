@@ -13,7 +13,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * @date 2022/8/26
  */
 @SpringCloudApplication
-@EnableFeignClients
+@EnableFeignClients(basePackages = {
+        "com.atguigu.gmall.feign.product"
+})
 @EnableSwagger2
 @Import(Swagger2Config.class)
 @EnableThreadPool

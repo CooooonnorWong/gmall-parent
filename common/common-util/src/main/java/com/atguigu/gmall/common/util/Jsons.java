@@ -3,7 +3,6 @@ package com.atguigu.gmall.common.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.istack.internal.NotNull;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -19,7 +18,7 @@ public class Jsons {
      * @param object
      * @return
      */
-    public static String toStr(@NotNull Object object) {
+    public static String toStr(Object object) {
         //jackson
         try {
             return MAPPER.writeValueAsString(object);
