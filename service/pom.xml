@@ -15,6 +15,7 @@
         <module>service-activity</module>
         <module>web-all</module>
         <module>service-item</module>
+        <module>service-search</module>
     </modules>
     <artifactId>service</artifactId>
 
