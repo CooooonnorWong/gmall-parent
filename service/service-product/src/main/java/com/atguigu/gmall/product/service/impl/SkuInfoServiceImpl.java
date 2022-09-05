@@ -2,9 +2,12 @@ package com.atguigu.gmall.product.service.impl;
 
 
 import com.atguigu.cache.constant.SysRedisConst;
+import com.atguigu.gmall.feign.search.SearchFeignClient;
 import com.atguigu.gmall.model.product.*;
 import com.atguigu.gmall.model.to.CategoryViewTo;
 import com.atguigu.gmall.model.to.SkuDetailTo;
+import com.atguigu.gmall.model.vo.search.Goods;
+import com.atguigu.gmall.model.vo.search.SearchAttr;
 import com.atguigu.gmall.product.mapper.SkuInfoMapper;
 import com.atguigu.gmall.product.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -15,7 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author Connor
@@ -25,6 +31,8 @@ import java.util.List;
 @Service
 public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         implements SkuInfoService {
+    @Autowired
+    private ExecutorService executor;
 
     @Autowired
     private SkuImageService skuImageService;
@@ -37,7 +45,12 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     @Autowired
     private BaseCategory3Service baseCategory3Service;
     @Autowired
+    private BaseTrademarkService baseTrademarkService;
+    @Autowired
+    private SearchFeignClient searchFeignClient;
+    @Autowired
     private RedissonClient redissonClient;
+
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -69,7 +82,50 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     @Override
     public void updateSale(Long skuId, int isSale) {
         baseMapper.updateSale(skuId, isSale);
-        // TODO: 2022/8/25 从ElasticSearch中更新商品出售情况
+        Goods goods = getGoodsBySkuId(skuId);
+        //isSale:1 上架 / 0 下架
+        if (isSale == 1) {
+            //上架
+            searchFeignClient.forSale(goods);
+        } else {
+            //下架
+            searchFeignClient.notForSale(goods);
+        }
+
+    }
+
+    private Goods getGoodsBySkuId(Long skuId) {
+        Goods goods = new Goods();
+        CompletableFuture<SkuInfo> future = CompletableFuture.supplyAsync(() -> this.getById(skuId), executor);
+        CompletableFuture<Void> part1 = future.thenAcceptAsync(skuInfo -> {
+            goods.setId(skuId);
+            goods.setDefaultImg(skuInfo.getSkuDefaultImg());
+            goods.setTitle(skuInfo.getSkuName());
+            goods.setPrice(skuInfo.getPrice().doubleValue());
+            goods.setCreateTime(new Date());
+            goods.setTmId(skuInfo.getTmId());
+        }, executor);
+        CompletableFuture<Void> part2 = future.thenAcceptAsync(skuInfo -> {
+            BaseTrademark trademark = baseTrademarkService.getById(skuInfo.getTmId());
+            goods.setTmName(trademark.getTmName());
+            goods.setTmLogoUrl(trademark.getLogoUrl());
+        }, executor);
+        CompletableFuture<Void> part3 = future.thenAcceptAsync(skuInfo -> {
+            CategoryViewTo categoryView = baseCategory3Service.getCategoryView(skuInfo.getCategory3Id());
+            goods.setCategory1Id(categoryView.getCategory1Id());
+            goods.setCategory1Name(categoryView.getCategory1Name());
+            goods.setCategory2Id(categoryView.getCategory2Id());
+            goods.setCategory2Name(categoryView.getCategory2Name());
+            goods.setCategory3Id(categoryView.getCategory3Id());
+            goods.setCategory3Name(categoryView.getCategory3Name());
+            goods.setHotScore(0L);
+        }, executor);
+        CompletableFuture<Void> part4 = CompletableFuture.runAsync(()->{
+            List<SearchAttr> attrs = skuAttrValueService.getSearchAttrList(skuId);
+            goods.setAttrs(attrs);
+        }, executor);
+        CompletableFuture.allOf(part1, part2, part3, part4).join();
+        return goods;
     }
 
     @Deprecated

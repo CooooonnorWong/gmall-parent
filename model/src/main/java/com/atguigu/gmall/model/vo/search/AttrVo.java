@@ -1,4 +1,4 @@
-package com.atguigu.gmall.model.list;
+package com.atguigu.gmall.model.vo.search;
 
 import lombok.Data;
 
@@ -8,7 +8,7 @@ import java.util.List;
 
 // 平台属性相关对象
 @Data
-public class SearchResponseAttrVo implements Serializable {
+public class AttrVo implements Serializable {
 
     // 平台属性Id
     private Long attrId;//1

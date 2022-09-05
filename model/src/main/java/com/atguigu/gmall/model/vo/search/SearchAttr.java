@@ -1,4 +1,4 @@
-package com.atguigu.gmall.model.list;
+package com.atguigu.gmall.model.vo.search;
 
 import lombok.Data;
 import org.springframework.data.elasticsearch.annotations.Field;
