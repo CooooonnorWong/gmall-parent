@@ -22,7 +22,7 @@
                bav.value_name attr_value
         from sku_attr_value sav
                  left join base_attr_info bai on sav.attr_id = bai.id
-                 left join base_attr_value bav on sav.value_id = bai.id
+                 left join base_attr_value bav on sav.value_id = bav.id
         where sav.sku_id = #{skuId}
     </select>
 </mapper>

@@ -20,7 +20,7 @@ public class SearchResponseVo implements Serializable {
     //所有品牌列表
     private List<TrademarkVo> trademarkList;
     //所有属性列表
-    private List<SearchAttr> attrsList;
+    private List<AttrVo> attrsList;
     //以上筛选列表功能ok====
 
 
