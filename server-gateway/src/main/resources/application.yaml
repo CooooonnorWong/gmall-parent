@@ -22,14 +22,22 @@ spring:
           uri: lb://service-product
           predicates:
             - Path=/admin/product/**
+
         - id: service-activity
           uri: lb://service-activity
           predicates:
             - Path=/admin/activity/**
+
         - id: service-item
           uri: lb://service-item
           predicates:
             - Path=/lock/**
+
+        - id: service-user
+          uri: lb://service-user
+          predicates:
+            - Path=/api/user/**
+
         - id: web-all
           uri: lb://web-all
           predicates:

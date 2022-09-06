@@ -13,4 +13,5 @@ public interface SysRedisConst {
     String BLOOM_SKUID = "bloom:skuid";
     String LOCK_PREFIX = "lock:";
     String CACHE_CATEGORY_TREE = "category:tree";
+    String USER_INFO_PREFIX = "user:info:";
 }
