@@ -8,7 +8,8 @@ spring:
     sender:
       type: web
   autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 feign:
   client:
     config:
