@@ -59,6 +59,13 @@ public class GoodsServiceImpl implements GoodsService {
         return buildResult(hits, searchParamVo);
     }
 
+    /**
+     * 构建检索结果集
+     *
+     * @param hits
+     * @param paramVo
+     * @return
+     */
     private SearchResponseVo buildResult(SearchHits<Goods> hits, SearchParamVo paramVo) {
         SearchResponseVo vo = new SearchResponseVo();
         //检索用的所有参数
@@ -130,7 +137,10 @@ public class GoodsServiceImpl implements GoodsService {
             ParsedStringTerms attrNameAggs = bucket.getAggregations().get("attrNameAggs");
             String attrName = attrNameAggs.getBuckets().get(0).getKeyAsString();
             ParsedStringTerms attrValueAggs = bucket.getAggregations().get("attrValueAggs");
-            List<String> attrValueList = attrValueAggs.getBuckets().stream().map(MultiBucketsAggregation.Bucket::getKeyAsString).collect(Collectors.toList());
+            List<String> attrValueList = attrValueAggs.getBuckets()
+                    .stream()
+                    .map(MultiBucketsAggregation.Bucket::getKeyAsString)
+                    .collect(Collectors.toList());
             AttrVo attrVo = new AttrVo();
             attrVo.setAttrId(attrId);
             attrVo.setAttrName(attrName);
@@ -161,6 +171,12 @@ public class GoodsServiceImpl implements GoodsService {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * 构建原url
+     *
+     * @param paramVo
+     * @return
+     */
     private String buildUrl(SearchParamVo paramVo) {
         StringBuilder builder = new StringBuilder("list.html?");
         if (!StringUtils.isEmpty(paramVo.getKeyword())) {
@@ -179,12 +195,19 @@ public class GoodsServiceImpl implements GoodsService {
             builder.append("&trademark=").append(paramVo.getTrademark());
         }
         if (paramVo.getProps() != null && paramVo.getProps().length > 0) {
-            Arrays.stream(paramVo.getProps()).forEach(prop -> builder.append("&prop=").append(prop));
+            Arrays.stream(paramVo.getProps()).forEach(prop -> builder.append("&props=").append(prop));
         }
         return builder.toString();
     }
 
+    /**
+     * 构建dsl语句
+     *
+     * @param paramVo
+     * @return
+     */
     private Query buildQueryDSL(SearchParamVo paramVo) {
+        //查询条件
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         if (paramVo.getKeyword() != null) {
             boolQueryBuilder.must(QueryBuilders.matchQuery("title", paramVo.getKeyword()));
@@ -214,6 +237,7 @@ public class GoodsServiceImpl implements GoodsService {
             }
         }
         NativeSearchQuery query = new NativeSearchQuery(boolQueryBuilder);
+        //排序
         String[] split = paramVo.getOrder().split(":");
         String field = "hotScore";
         switch (split[0]) {
@@ -232,6 +256,7 @@ public class GoodsServiceImpl implements GoodsService {
         query.addSort("asc".equals(split[1]) ? Sort.by(field).ascending() : Sort.by(field).descending());
         query.setPageable(PageRequest.of(paramVo.getPageNo() - 1, paramVo.getPageSize()));
 
+        //关键字高亮
         query.setHighlightQuery(
                 new HighlightQuery(
                         new HighlightBuilder()
@@ -239,21 +264,21 @@ public class GoodsServiceImpl implements GoodsService {
                                 .preTags("<span style='color:red'>")
                                 .postTags("</span>")));
 
-        //聚合检索 - 检索结果集中的品牌和平台属性列表
+        //聚合检索 - 检索结果集中的品牌列表
         TermsAggregationBuilder tmIdAggs = AggregationBuilders.terms("tmIdAggs").field("tmId").size(1000);
         tmIdAggs.subAggregation(AggregationBuilders.terms("tmNameAggs").field("tmName").size(1));
         tmIdAggs.subAggregation(AggregationBuilders.terms("tmLogoUrlAggs").field("tmLogoUrl").size(1));
         query.addAggregation(tmIdAggs);
 
+        //聚合检索 - 结果集中的平台属性列表
         NestedAggregationBuilder nested = AggregationBuilders.nested("attrsAggs", "attrs");
-
         TermsAggregationBuilder attrIdAggs = AggregationBuilders.terms("attrIdAggs").field("attrs.attrId").size(1000);
         TermsAggregationBuilder attrNameAggs = AggregationBuilders.terms("attrNameAggs").field("attrs.attrName").size(1);
         TermsAggregationBuilder attrValueAggs = AggregationBuilders.terms("attrValueAggs").field("attrs.attrValue").size(1000);
-
         attrIdAggs.subAggregation(attrNameAggs);
         attrIdAggs.subAggregation(attrValueAggs);
         nested.subAggregation(attrIdAggs);
+
         query.addAggregation(nested);
         return query;
     }

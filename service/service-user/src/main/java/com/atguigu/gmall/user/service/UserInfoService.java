@@ -19,4 +19,9 @@ public interface UserInfoService extends IService<UserInfo> {
      * @return
      */
     LoginSuccessVo login(UserInfo userInfo);
+
+    /**
+     * 用户登出
+     */
+    void logout(String token);
 }

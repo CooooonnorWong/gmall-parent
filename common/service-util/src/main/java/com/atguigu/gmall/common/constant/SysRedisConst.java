@@ -1,4 +1,4 @@
-package com.atguigu.cache.constant;
+package com.atguigu.gmall.common.constant;
 
 /**
  * @author Connor
