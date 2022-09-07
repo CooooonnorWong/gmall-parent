@@ -14,4 +14,5 @@ public interface SysRedisConst {
     String LOCK_PREFIX = "lock:";
     String CACHE_CATEGORY_TREE = "category:tree";
     String LOGIN_USER_PREFIX = "login:user:";
+    String HEADER_USERID = "userid";
 }

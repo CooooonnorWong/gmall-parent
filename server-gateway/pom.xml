@@ -55,6 +55,21 @@
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.atguigu.gmall</groupId>
+            <artifactId>service-util</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.atguigu.gmall</groupId>
+            <artifactId>model</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
 </project>

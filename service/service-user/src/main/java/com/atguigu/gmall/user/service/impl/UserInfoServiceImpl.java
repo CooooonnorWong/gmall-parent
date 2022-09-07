@@ -38,7 +38,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         LoginSuccessVo vo = new LoginSuccessVo();
         vo.setToken(UUID.randomUUID().toString().replace("-", "") + MD5.encrypt(one.getPasswd() + UUID.randomUUID().toString()));
         vo.setNickName(one.getNickName());
-        redisTemplate.opsForValue().set(SysRedisConst.LOGIN_USER_PREFIX + vo.getToken(), Jsons.toStr(vo), 7, TimeUnit.DAYS);
+        redisTemplate.opsForValue().set(SysRedisConst.LOGIN_USER_PREFIX + vo.getToken(), Jsons.toStr(one), 7, TimeUnit.DAYS);
         return vo;
     }
 
