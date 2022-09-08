@@ -17,6 +17,7 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -55,6 +56,7 @@ public class GlobalAuthFilter implements GlobalFilter {
                 return responseResult(result, exchange);
             }
         }
+
         String token = getToken(exchange);
         UserInfo userInfo = getUserInfoByToken(token);
         String uri = exchange.getRequest().getURI().toString();
@@ -67,19 +69,16 @@ public class GlobalAuthFilter implements GlobalFilter {
                     return redirectToLoginPage(authProperties.getLoginPageUrl() + "?originUrl=" + uri, exchange);
                 }
                 //token正确,查到数据,透传id,放行
-                return chain.filter(userIdPenetrate(userInfo, exchange));
+                return chain.filter(userIdOrUserTempIdPenetrate(userInfo, exchange));
             }
         }
         //能走到这儿，既不是静态资源直接放行，也不是必须登录才能访问的，就一普通请求
         //普通请求只要带了 token，说明可能登录了。只要登录了，就透传用户id
-        if (userInfo != null) {
-            exchange = userIdPenetrate(userInfo, exchange);
-        } else {
+        if (userInfo == null && !StringUtils.isEmpty(token)) {
             //如果前端带了token，但是没用户信息，代表这是假令牌
-            if (!StringUtils.isEmpty(token)) {
-                return redirectToLoginPage(authProperties.getLoginPageUrl() + "?originUrl=" + uri, exchange);
-            }
+            return redirectToLoginPage(authProperties.getLoginPageUrl() + "?originUrl=" + uri, exchange);
         }
+        exchange = userIdOrUserTempIdPenetrate(userInfo, exchange);
 
         return chain.filter(exchange);
     }
@@ -91,10 +90,7 @@ public class GlobalAuthFilter implements GlobalFilter {
      * @param exchange
      * @return
      */
-    private ServerWebExchange userIdPenetrate(UserInfo userInfo, ServerWebExchange exchange) {
-        if (userInfo == null) {
-            return exchange;
-        }
+    private ServerWebExchange userIdOrUserTempIdPenetrate(UserInfo userInfo, ServerWebExchange exchange) {
         //请求一旦发来，所有的请求数据是固定的，不能进行任何修改，只能读取
         //根据原来的请求，封装一个新情求
         //放行的时候传改掉的exchange
@@ -103,10 +99,30 @@ public class GlobalAuthFilter implements GlobalFilter {
                 .response(exchange.getResponse())
                 .request(exchange.getRequest()
                         .mutate()
-                        .header(SysRedisConst.HEADER_USERID, userInfo.getId().toString())
+                        //userInfo==null 表示用户未登录
+                        .header(SysRedisConst.HEADER_USERID, userInfo == null ? null : userInfo.getId().toString())
+                        //放入临时用户id
+                        .header(SysRedisConst.HEADER_USERTEMPID, getUserTempId(exchange))
                         .build())
                 .build();
+    }
 
+    /**
+     * 获取临时用户id
+     *
+     * @param exchange
+     * @return
+     */
+    private String getUserTempId(ServerWebExchange exchange) {
+        ServerHttpRequest request = exchange.getRequest();
+        String userTempId = request.getHeaders().getFirst(SysRedisConst.HEADER_USERTEMPID);
+        if (StringUtils.isEmpty(userTempId)) {
+            HttpCookie cookie = request.getCookies().getFirst(SysRedisConst.HEADER_USERTEMPID);
+            if (cookie != null) {
+                userTempId = cookie.toString();
+            }
+        }
+        return userTempId;
     }
 
     /**
@@ -141,7 +157,11 @@ public class GlobalAuthFilter implements GlobalFilter {
         if (StringUtils.isEmpty(token)) {
             return null;
         }
-        return Jsons.toObj(redisTemplate.opsForValue().get(SysRedisConst.LOGIN_USER_PREFIX + token), UserInfo.class);
+        String jsonStr = redisTemplate.opsForValue().get(SysRedisConst.LOGIN_USER_PREFIX + token);
+        if (StringUtils.isEmpty(jsonStr)) {
+            return null;
+        }
+        return Jsons.toObj(jsonStr, UserInfo.class);
     }
 
     /**
