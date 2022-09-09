@@ -1,5 +1,7 @@
 package com.atguigu.gmall.weball.service;
 
+import org.springframework.ui.Model;
+
 /**
  * @author Connor
  * @date 2022/9/8
@@ -10,6 +12,12 @@ public interface CartService {
      *
      * @param skuId
      * @param skuNum
+     * @param model
      */
-    void addToCart(Long skuId, Integer skuNum);
+    boolean addToCart(Long skuId, Integer skuNum, Model model);
+
+    /**
+     * 删除选中的物品
+     */
+    void deleteChecked();
 }

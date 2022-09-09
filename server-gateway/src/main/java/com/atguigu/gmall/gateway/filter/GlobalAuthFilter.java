@@ -119,7 +119,7 @@ public class GlobalAuthFilter implements GlobalFilter {
         if (StringUtils.isEmpty(userTempId)) {
             HttpCookie cookie = request.getCookies().getFirst(SysRedisConst.HEADER_USERTEMPID);
             if (cookie != null) {
-                userTempId = cookie.toString();
+                userTempId = cookie.getValue();
             }
         }
         return userTempId;
@@ -173,9 +173,9 @@ public class GlobalAuthFilter implements GlobalFilter {
     private String getToken(ServerWebExchange exchange) {
         //由于前端乱写，到处可能都有【Cookie[token=xxx]】【Header[token=xxx]】
         //1、先检查Cookie中有没有这个 token
-        HttpCookie token = exchange.getRequest().getCookies().getFirst("token");
-        if (token != null) {
-            return token.getValue();
+        HttpCookie cookie = exchange.getRequest().getCookies().getFirst("token");
+        if (cookie != null) {
+            return cookie.getValue();
         }
         //2.Cookie中没有,再从header中找
         return exchange.getRequest().getHeaders().getFirst("token");

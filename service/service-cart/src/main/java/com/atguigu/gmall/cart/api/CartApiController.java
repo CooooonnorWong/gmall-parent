@@ -2,6 +2,7 @@ package com.atguigu.gmall.cart.api;
 
 import com.atguigu.gmall.cart.cart.CartService;
 import com.atguigu.gmall.common.result.Result;
+import com.atguigu.gmall.model.product.SkuInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,9 +20,15 @@ public class CartApiController {
     private CartService cartService;
 
     @GetMapping("/addCart")
-    public Result<Object> addToCart(@RequestParam("skuId") Long skuId,
-                                    @RequestParam("skuNum") Integer skuNum) {
-        cartService.addCart(skuId, skuNum);
+    public Result<SkuInfo> addToCart(@RequestParam("skuId") Long skuId,
+                                     @RequestParam("skuNum") Integer skuNum) {
+        SkuInfo skuInfo = cartService.addToCart(skuId, skuNum);
+        return Result.ok(skuInfo);
+    }
+
+    @GetMapping("/deleteChecked")
+    public Result<Object> deleteChecked() {
+        cartService.deleteChecked(cartService.buildCartKey());
         return Result.ok();
     }
 
