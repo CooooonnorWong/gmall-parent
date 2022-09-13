@@ -25,6 +25,10 @@ public class OrderDetail extends BaseEntity {
     @TableField("sku_id")
     private Long skuId;
 
+    @ApiModelProperty(value = "用户id")
+    @TableField("user_id")
+    private Long userId;
+
     @ApiModelProperty(value = "sku名称（冗余)")
     @TableField("sku_name")
     private String skuName;
