@@ -1,4 +1,4 @@
-package com.atguigu.gmall.cart.cart;
+package com.atguigu.gmall.cart.service;
 
 import com.atguigu.gmall.model.cart.CartInfo;
 import com.atguigu.gmall.model.product.SkuInfo;

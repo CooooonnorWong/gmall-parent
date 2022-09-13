@@ -1,6 +1,6 @@
 package com.atguigu.gmall.cart.controller;
 
-import com.atguigu.gmall.cart.cart.CartService;
+import com.atguigu.gmall.cart.service.CartService;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.cart.CartInfo;
 import org.springframework.beans.factory.annotation.Autowired;

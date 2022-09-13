@@ -1,6 +1,8 @@
 package com.atguigu.gmall.order.business.impl;
 
 import com.atguigu.gmall.common.constant.SysRedisConst;
+import com.atguigu.gmall.common.execption.GmallException;
+import com.atguigu.gmall.common.result.ResultCodeEnum;
 import com.atguigu.gmall.common.utils.AuthUtils;
 import com.atguigu.gmall.feign.cart.CartFeignClient;
 import com.atguigu.gmall.feign.user.UserFeignClient;
@@ -8,14 +10,17 @@ import com.atguigu.gmall.feign.ware.WareFeignClient;
 import com.atguigu.gmall.model.user.UserAddress;
 import com.atguigu.gmall.model.vo.order.CartInfoVo;
 import com.atguigu.gmall.model.vo.order.OrderConfirmDataVo;
+import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
 import com.atguigu.gmall.order.business.BusinessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -92,5 +97,38 @@ public class BusinessServiceImpl implements BusinessService {
         String tradeNo = System.currentTimeMillis() + "" + AuthUtils.currentAuthInfo().getUserId() + UUID.randomUUID().toString().replace("-", "");
         redisTemplate.opsForValue().set(SysRedisConst.ORDER_TEMP_TOKEN + tradeNo, "1", 15, TimeUnit.MINUTES);
         return tradeNo;
+    }
+
+    @Override
+    public Long submitOrder(OrderSubmitVo orderSubmitVo, String tradeNo) {
+        //1.查令牌
+        //2.验证令牌
+        if (!checkToken(tradeNo)) {
+            throw new GmallException(ResultCodeEnum.TOKEN_INVALID);
+        }
+
+        //3.验证库存
+        //4.验证价格
+        //5.保存订单
+        return null;
+    }
+
+    @Override
+    public boolean checkToken(String tradeNo) {
+        //1、先看有没有，如果有就是正确令牌, 1, 0 。脚本校验令牌
+        String lua = "if redis.call(\"get\",KEYS[1]) == ARGV[1] then " +
+                "return redis.call(\"del\",KEYS[1]) " +
+                "else " +
+                "return 0 " +
+                "end";
+        Long execute = redisTemplate.execute(new DefaultRedisScript<Long>(lua, Long.class),
+                Arrays.asList(SysRedisConst.ORDER_TEMP_TOKEN + tradeNo),
+                new String[]{"1"});
+
+        if (execute > 0) {
+            //令牌正确，并且已经删除
+            return true;
+        }
+        return false;
     }
 }

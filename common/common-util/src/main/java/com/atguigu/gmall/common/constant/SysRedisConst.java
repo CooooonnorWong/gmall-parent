@@ -21,7 +21,7 @@ public interface SysRedisConst {
     /**
      * 用户id或临时id
      */
-    public static final String CART_KEY = "cart:user:";
+    public static final String CART_KEY = "service:user:";
     /**
      * 购物车中商品条目总数限制
      */

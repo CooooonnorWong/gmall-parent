@@ -25,13 +25,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(GmallException.class)
     @ResponseBody
     public Result<Object> error(GmallException e) {
-        return Result.fail(e.getMessage());
+        Result<Object> fail = Result.fail();
+        fail.setCode(e.getCode());
+        fail.setMessage(e.getMessage());
+        return fail;
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public Result<Object> error(Exception e) {
         e.printStackTrace();
-        return Result.fail(e.getMessage());
+        Result<Object> result = Result.fail();
+        return result.message(e.getMessage());
     }
 }

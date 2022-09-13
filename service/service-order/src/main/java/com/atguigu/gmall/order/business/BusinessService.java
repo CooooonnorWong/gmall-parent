@@ -1,6 +1,7 @@
 package com.atguigu.gmall.order.business;
 
 import com.atguigu.gmall.model.vo.order.OrderConfirmDataVo;
+import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
 
 /**
  * @author Connor
@@ -20,4 +21,15 @@ public interface BusinessService {
      * @return
      */
     String generateTradeNo();
+
+    /**
+     * 提交订单
+     *
+     * @param orderSubmitVo
+     * @param tradeNo
+     * @return
+     */
+    Long submitOrder(OrderSubmitVo orderSubmitVo, String tradeNo);
+
+    boolean checkToken(String tradeNo);
 }

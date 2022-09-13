@@ -1,6 +1,6 @@
-package com.atguigu.gmall.cart.cart.impl;
+package com.atguigu.gmall.cart.service.impl;
 
-import com.atguigu.gmall.cart.cart.CartService;
+import com.atguigu.gmall.cart.service.CartService;
 import com.atguigu.gmall.common.constant.SysRedisConst;
 import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
@@ -172,6 +172,7 @@ public class CartServiceImpl implements CartService {
         RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
         executor.submit(() -> {
             RequestContextHolder.setRequestAttributes(requestAttributes);
+            // TODO: 2022/9/14 存在时间差问题
             updateAllItemsPrice(cartKey, cartInfoList);
             RequestContextHolder.resetRequestAttributes();
         });
