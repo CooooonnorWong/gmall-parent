@@ -1,4 +1,4 @@
-package com.atguigu.gmall.weball.config;
+package com.atguigu.gmall.common.config;
 
 import com.atguigu.gmall.common.constant.SysRedisConst;
 import feign.RequestInterceptor;
@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
  * @date 2022/9/8
  */
 @Component
-public class WebAllConfig {
+public class FeignInterceptorConfig {
 
     /**
      * 请求拦截器

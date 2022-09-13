@@ -16,11 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,8 @@ public class CartServiceImpl implements CartService {
     private StringRedisTemplate redisTemplate;
     @Autowired
     private ProductFeignClient productFeignClient;
+    @Autowired
+    private ExecutorService executor;
 
     /**
      * 将商品添加到购物车
@@ -160,10 +165,36 @@ public class CartServiceImpl implements CartService {
     @Override
     public List<CartInfo> getCartList(String cartKey) {
         BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(cartKey);
-        return hashOps.values().stream()
+        List<CartInfo> cartInfoList = hashOps.values().stream()
                 .map(jsonStr -> Jsons.toObj(jsonStr, CartInfo.class))
                 .sorted((v, k) -> v.getCreateTime().compareTo(k.getCreateTime()))
                 .collect(Collectors.toList());
+        RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
+        executor.submit(() -> {
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+            updateAllItemsPrice(cartKey, cartInfoList);
+            RequestContextHolder.resetRequestAttributes();
+        });
+
+        return cartInfoList;
+    }
+
+    @Override
+    public void updateAllItemsPrice(String cartKey, List<CartInfo> cartInfoList) {
+        BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(cartKey);
+        RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
+        cartInfoList.stream()
+                .parallel()
+                .forEach(item -> {
+                    RequestContextHolder.setRequestAttributes(requestAttributes);
+                    BigDecimal price = productFeignClient.getRealTimePrice(item.getSkuId()).getData();
+                    item.setSkuPrice(price);
+                    item.setCartPrice(item.getSkuPrice().multiply(new BigDecimal(item.getSkuNum().toString())));
+                    item.setUpdateTime(new Date());
+                    //更新redis中的价格
+                    hashOps.put(item.getSkuId().toString(), Jsons.toStr(item));
+                    RequestContextHolder.resetRequestAttributes();
+                });
     }
 
     @Override
@@ -199,14 +230,20 @@ public class CartServiceImpl implements CartService {
     @Override
     public void deleteChecked(String cartKey) {
         BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(cartKey);
-        List<String> list = hashOps.values().stream()
+        List<String> list = getCheckedItems(cartKey);
+        if (list.size() > 0) {
+            hashOps.delete(list.toArray());
+        }
+    }
+
+    @Override
+    public List<String> getCheckedItems(String cartKey) {
+        BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(cartKey);
+        return hashOps.values().stream()
                 .map(str -> Jsons.toObj(str, CartInfo.class))
                 .filter(v -> v.getIsChecked() == 1)
                 .map(v -> v.getSkuId().toString())
                 .collect(Collectors.toList());
-        if (list.size() > 0) {
-            hashOps.delete(list.toArray());
-        }
     }
 
     @Override

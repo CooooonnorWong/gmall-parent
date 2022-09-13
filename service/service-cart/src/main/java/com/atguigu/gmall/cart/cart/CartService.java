@@ -11,6 +11,13 @@ import java.util.List;
  */
 public interface CartService {
     /**
+     * 购物车操作键
+     *
+     * @return
+     */
+    String buildCartKey();
+
+    /**
      * 将商品添加到购物车
      * 并自动延期
      *
@@ -48,13 +55,6 @@ public interface CartService {
     SkuInfo convertCartInfo2SkuInfo(CartInfo item);
 
     /**
-     * 购物车操作键
-     *
-     * @return
-     */
-    String buildCartKey();
-
-    /**
      * 获取购物车列表
      *
      * @param cartKey
@@ -67,6 +67,7 @@ public interface CartService {
      *
      * @param skuId
      * @param isChecked
+     * @param cartKey
      */
     void checkCart(Long skuId, Integer isChecked, String cartKey);
 
@@ -75,6 +76,7 @@ public interface CartService {
      *
      * @param skuId
      * @param increment
+     * @param cartKey
      */
     void increaseItemNum(Long skuId, Integer increment, String cartKey);
 
@@ -94,7 +96,24 @@ public interface CartService {
     void deleteChecked(String cartKey);
 
     /**
+     * 获取购物车中选中的物品
+     *
+     * @param cartKey
+     * @return
+     */
+    List<String> getCheckedItems(String cartKey);
+
+    /**
      * 尝试合并临时购物车
      */
     void tryMergeTempCart();
+
+    /**
+     * 更新所有物品实时价格
+     *
+     * @param cartKey
+     * @param cartInfoList
+     */
+    void updateAllItemsPrice(String cartKey, List<CartInfo> cartInfoList);
+
 }
