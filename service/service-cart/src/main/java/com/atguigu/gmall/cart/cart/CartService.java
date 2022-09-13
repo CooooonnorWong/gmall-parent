@@ -96,7 +96,7 @@ public interface CartService {
     void deleteChecked(String cartKey);
 
     /**
-     * 获取购物车中选中的物品
+     * 获取购物车中选中的物品的skuId
      *
      * @param cartKey
      * @return
@@ -116,4 +116,11 @@ public interface CartService {
      */
     void updateAllItemsPrice(String cartKey, List<CartInfo> cartInfoList);
 
+    /**
+     * 获取购物车中的结算商品
+     *
+     * @param cartKey
+     * @return
+     */
+    List<CartInfo> getChecked(String cartKey);
 }

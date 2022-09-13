@@ -30,4 +30,8 @@ public interface SysRedisConst {
      * 单个商品数量限制
      */
     public static final Integer CART_ITEM_NUM_LIMIT = 200;
+    /**
+     * 临时订单流水号
+     */
+    String ORDER_TEMP_TOKEN = "order:temptoken:";
 }

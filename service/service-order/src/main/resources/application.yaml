@@ -3,3 +3,7 @@ server:
 spring:
   profiles:
     include: shardingsphere
+
+gmall:
+  ware:
+    url: http://localhost:10001/

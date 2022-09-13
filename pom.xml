@@ -12,6 +12,7 @@
         <module>model</module>
         <module>common</module>
         <module>service</module>
+        <module>ware-manage</module>
     </modules>
     <!-- 声明打包方式是POM，代表这是一个父项目只来进行依赖、版本、模块管理。不写代码   -->
     <packaging>pom</packaging>

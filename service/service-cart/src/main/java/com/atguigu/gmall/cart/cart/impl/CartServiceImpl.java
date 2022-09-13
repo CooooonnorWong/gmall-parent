@@ -198,6 +198,28 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    public List<CartInfo> getChecked(String cartKey) {
+        RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
+        CompletableFuture<List<CartInfo>> cartFuture = CompletableFuture.supplyAsync(() -> {
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+            List<CartInfo> cartList = this.getCartList(cartKey);
+            RequestContextHolder.resetRequestAttributes();
+            return cartList;
+        }, executor);
+        CompletableFuture<List<String>> skuIdFuture = CompletableFuture.supplyAsync(() -> {
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+            List<String> skuIds = this.getCheckedItems(cartKey);
+            RequestContextHolder.resetRequestAttributes();
+            return skuIds;
+        }, executor);
+        List<CartInfo> cartList = cartFuture.join();
+        List<String> skuIds = skuIdFuture.join();
+        return cartList.stream()
+                .filter(cartInfo -> skuIds.contains(cartInfo.getSkuId().toString()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void checkCart(Long skuId, Integer isChecked, String cartKey) {
         BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(cartKey);
         String jsonStr = hashOps.get(skuId.toString());
