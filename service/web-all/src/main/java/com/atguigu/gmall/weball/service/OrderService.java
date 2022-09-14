@@ -12,5 +12,13 @@ public interface OrderService {
      *
      * @param model
      */
-    void loadPage(Model model);
+    void loadTradePage(Model model);
+
+    /**
+     * 加载支付页面
+     *
+     * @param orderId
+     * @param model
+     */
+    String loadPayPage(Long orderId, Model model);
 }

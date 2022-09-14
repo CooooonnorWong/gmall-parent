@@ -1,5 +1,6 @@
 package com.atguigu.gmall.product;
 
+import com.atguigu.gmall.common.annotation.EnableAutoFeignInterceptor;
 import com.atguigu.gmall.common.annotation.EnableMinioClient;
 import com.atguigu.gmall.common.annotation.EnableThreadPool;
 import com.atguigu.gmall.common.config.MybatisPlusConfig;
@@ -22,6 +23,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 })
 @EnableMinioClient
 @EnableThreadPool
+@EnableAutoFeignInterceptor
 @MapperScan("com.atguigu.gmall.product.mapper")
 @Import({Swagger2Config.class, MybatisPlusConfig.class})
 public class ProductMainApplication {

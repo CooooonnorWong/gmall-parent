@@ -5,6 +5,7 @@ import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
 import com.atguigu.gmall.common.utils.AuthUtils;
 import com.atguigu.gmall.feign.cart.CartFeignClient;
+import com.atguigu.gmall.feign.product.ProductFeignClient;
 import com.atguigu.gmall.feign.user.UserFeignClient;
 import com.atguigu.gmall.feign.ware.WareFeignClient;
 import com.atguigu.gmall.model.user.UserAddress;
@@ -12,6 +13,8 @@ import com.atguigu.gmall.model.vo.order.CartInfoVo;
 import com.atguigu.gmall.model.vo.order.OrderConfirmDataVo;
 import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
 import com.atguigu.gmall.order.business.BusinessService;
+import com.atguigu.gmall.order.service.OrderInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -33,6 +36,7 @@ import java.util.stream.Collectors;
  * @date 2022/9/13
  */
 @Service
+@Slf4j
 public class BusinessServiceImpl implements BusinessService {
     @Autowired
     private CartFeignClient cartFeignClient;
@@ -41,9 +45,13 @@ public class BusinessServiceImpl implements BusinessService {
     @Autowired
     private WareFeignClient wareFeignClient;
     @Autowired
+    private ProductFeignClient productFeignClient;
+    @Autowired
     private StringRedisTemplate redisTemplate;
     @Autowired
     private ExecutorService executor;
+    @Autowired
+    private OrderInfoService orderInfoService;
 
     @Override
     public OrderConfirmDataVo getOrderConfirmData() {
@@ -106,11 +114,60 @@ public class BusinessServiceImpl implements BusinessService {
         if (!checkToken(tradeNo)) {
             throw new GmallException(ResultCodeEnum.TOKEN_INVALID);
         }
-
+        log.info("令牌验证通过: {}", tradeNo);
         //3.验证库存
+        List<String> noStockSkus = checkStock(orderSubmitVo.getOrderDetailList());
+        if (noStockSkus.size() > 0) {
+            throw new GmallException(ResultCodeEnum.ORDER_NO_STOCK.getMessage() + "\n" + noStockSkus.stream()
+                    .reduce((s1, s2) -> s1 + " | " + s2)
+                    .get(),
+                    ResultCodeEnum.ORDER_NO_STOCK.getCode());
+        }
+        log.info("库存验证通过");
         //4.验证价格
+        List<String> priceChangedSkus = checkPrice(orderSubmitVo.getOrderDetailList());
+        if (priceChangedSkus.size() > 0) {
+            throw new GmallException(
+                    ResultCodeEnum.ORDER_PRICE_CHANGED.getMessage() + "\n" + priceChangedSkus.stream()
+                            .reduce((k, v) -> k + " | " + v),
+                    ResultCodeEnum.ORDER_PRICE_CHANGED.getCode());
+        }
+        log.info("价格验证通过");
         //5.保存订单
-        return null;
+        Long orderId = orderInfoService.saveOrder(orderSubmitVo, tradeNo);
+        cartFeignClient.deleteChecked();
+        return orderId;
+    }
+
+    @Override
+    public List<String> checkPrice(List<CartInfoVo> orderDetailList) {
+//        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        return orderDetailList.stream()
+//                .parallel()
+                .filter(cartInfoVo -> {
+//                    RequestContextHolder.setRequestAttributes(attributes);
+                    BigDecimal realPrice = productFeignClient.getRealTimePrice(cartInfoVo.getSkuId()).getData();
+//                    RequestContextHolder.resetRequestAttributes();
+                    double diff = cartInfoVo.getOrderPrice().subtract(realPrice).doubleValue();
+                    return diff > 0.0001 || diff < -0.0001;
+                })
+                .map(CartInfoVo::getSkuName)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> checkStock(List<CartInfoVo> orderDetailList) {
+//        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        return orderDetailList.stream()
+//                .parallel()
+                .filter(cartInfoVo -> {
+//                    RequestContextHolder.setRequestAttributes(attributes);
+                    String hasStock = wareFeignClient.hasStock(cartInfoVo.getSkuId(), cartInfoVo.getSkuNum());
+//                    RequestContextHolder.resetRequestAttributes();
+                    return "0".equals(hasStock);
+                })
+                .map(CartInfoVo::getSkuName)
+                .collect(Collectors.toList());
     }
 
     @Override

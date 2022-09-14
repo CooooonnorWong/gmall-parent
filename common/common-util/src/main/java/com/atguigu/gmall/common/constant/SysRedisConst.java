@@ -21,17 +21,25 @@ public interface SysRedisConst {
     /**
      * 用户id或临时id
      */
-    public static final String CART_KEY = "service:user:";
+    String CART_KEY = "cart:user:";
     /**
      * 购物车中商品条目总数限制
      */
-    public static final long CART_ITEMS_LIMIT = 200;
+    long CART_ITEMS_LIMIT = 200;
     /**
      * 单个商品数量限制
      */
-    public static final Integer CART_ITEM_NUM_LIMIT = 200;
+    Integer CART_ITEM_NUM_LIMIT = 200;
     /**
      * 临时订单流水号
      */
     String ORDER_TEMP_TOKEN = "order:temptoken:";
+    /**
+     * 未支付订单过期时间(s)
+     */
+    long ORDER_CLOSE_TTL = 60 * 45L;
+    /**
+     * 订单可退款时间期限(s)
+     */
+    long ORDER_REFUND_TTL = 60 * 60 * 24 * 7L;
 }
