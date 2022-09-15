@@ -42,4 +42,8 @@ public interface SysRedisConst {
      * 订单可退款时间期限(s)
      */
     long ORDER_REFUND_TTL = 60 * 60 * 24 * 7L;
+    /**
+     * 重试关闭订单
+     */
+    String MQ_RETRY_CLOSE_ORDER = "mq:retry:close:order:";
 }

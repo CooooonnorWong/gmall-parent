@@ -8,6 +8,7 @@ import com.atguigu.gmall.feign.cart.CartFeignClient;
 import com.atguigu.gmall.feign.product.ProductFeignClient;
 import com.atguigu.gmall.feign.user.UserFeignClient;
 import com.atguigu.gmall.feign.ware.WareFeignClient;
+import com.atguigu.gmall.model.enums.ProcessStatus;
 import com.atguigu.gmall.model.user.UserAddress;
 import com.atguigu.gmall.model.vo.order.CartInfoVo;
 import com.atguigu.gmall.model.vo.order.OrderConfirmDataVo;
@@ -80,17 +81,17 @@ public class BusinessServiceImpl implements BusinessService {
         CompletableFuture<Void> totalNumFuture = cartInfoVoFuture.thenAcceptAsync(voList -> confirmDataVo.setTotalNum(voList.stream()
                 .map(CartInfoVo::getSkuNum)
                 .reduce(Integer::sum)
-                .get()));
+                .get()), executor);
         CompletableFuture<Void> totalAmountFuture = cartInfoVoFuture.thenAcceptAsync(voList -> confirmDataVo.setTotalAmount(voList.stream()
                 .map(vo -> vo.getOrderPrice().multiply(new BigDecimal(vo.getSkuNum().toString())))
                 .reduce(BigDecimal::add)
-                .get()));
+                .get()), executor);
         CompletableFuture<Void> userAddressFuture = CompletableFuture.runAsync(() -> {
             RequestContextHolder.setRequestAttributes(attributes);
             List<UserAddress> userAddressList = userFeignClient.getUserAddress().getData();
             confirmDataVo.setUserAddressList(userAddressList);
             RequestContextHolder.resetRequestAttributes();
-        });
+        }, executor);
         CompletableFuture<Void> tradeNoFuture = CompletableFuture.runAsync(() -> {
             RequestContextHolder.setRequestAttributes(attributes);
             confirmDataVo.setTradeNo(generateTradeNo());
@@ -134,37 +135,39 @@ public class BusinessServiceImpl implements BusinessService {
         }
         log.info("价格验证通过");
         //5.保存订单
+        //6.发送延迟关单消息,用户规定时间内未支付就关闭订单
         Long orderId = orderInfoService.saveOrder(orderSubmitVo, tradeNo);
+        //7.清除购物车中已经提交订单的商品
         cartFeignClient.deleteChecked();
         return orderId;
-    }
-
-    @Override
-    public List<String> checkPrice(List<CartInfoVo> orderDetailList) {
-//        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        return orderDetailList.stream()
-//                .parallel()
-                .filter(cartInfoVo -> {
-//                    RequestContextHolder.setRequestAttributes(attributes);
-                    BigDecimal realPrice = productFeignClient.getRealTimePrice(cartInfoVo.getSkuId()).getData();
-//                    RequestContextHolder.resetRequestAttributes();
-                    double diff = cartInfoVo.getOrderPrice().subtract(realPrice).doubleValue();
-                    return diff > 0.0001 || diff < -0.0001;
-                })
-                .map(CartInfoVo::getSkuName)
-                .collect(Collectors.toList());
     }
 
     @Override
     public List<String> checkStock(List<CartInfoVo> orderDetailList) {
 //        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         return orderDetailList.stream()
-//                .parallel()
+                .parallel()
                 .filter(cartInfoVo -> {
 //                    RequestContextHolder.setRequestAttributes(attributes);
                     String hasStock = wareFeignClient.hasStock(cartInfoVo.getSkuId(), cartInfoVo.getSkuNum());
 //                    RequestContextHolder.resetRequestAttributes();
                     return "0".equals(hasStock);
+                })
+                .map(CartInfoVo::getSkuName)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> checkPrice(List<CartInfoVo> orderDetailList) {
+//        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        return orderDetailList.stream()
+                .parallel()
+                .filter(cartInfoVo -> {
+//                    RequestContextHolder.setRequestAttributes(attributes);
+                    BigDecimal realPrice = productFeignClient.getRealTimePrice(cartInfoVo.getSkuId()).getData();
+//                    RequestContextHolder.resetRequestAttributes();
+                    double diff = cartInfoVo.getOrderPrice().subtract(realPrice).doubleValue();
+                    return diff > 0.0001 || diff < -0.0001;
                 })
                 .map(CartInfoVo::getSkuName)
                 .collect(Collectors.toList());
@@ -187,5 +190,13 @@ public class BusinessServiceImpl implements BusinessService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void closeOrder(Long orderId, Long userId) {
+        List<ProcessStatus> expected = Arrays.asList(ProcessStatus.UNPAID, ProcessStatus.FINISHED);
+        ProcessStatus status = ProcessStatus.CLOSED;
+        //CAS 先比较再修改
+        orderInfoService.changeOrderStatus(orderId, userId, status, expected);
     }
 }

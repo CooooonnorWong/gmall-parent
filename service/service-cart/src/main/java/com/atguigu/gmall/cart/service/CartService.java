@@ -86,7 +86,7 @@ public interface CartService {
      * @param skuId
      * @param cartKey
      */
-    void deleteCart(Long skuId, String cartKey);
+    void deleteCartItem(Long skuId, String cartKey);
 
     /**
      * 删除购物车中选中的商品
@@ -112,9 +112,8 @@ public interface CartService {
      * 更新所有物品实时价格
      *
      * @param cartKey
-     * @param cartInfoList
      */
-    void updateAllItemsPrice(String cartKey, List<CartInfo> cartInfoList);
+    void updateAllItemsPrice(String cartKey);
 
     /**
      * 获取购物车中的结算商品

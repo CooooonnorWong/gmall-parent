@@ -1,16 +1,20 @@
 package com.atguigu.gmall.order.service.impl;
 
 import com.atguigu.gmall.common.constant.SysRedisConst;
+import com.atguigu.gmall.common.util.Jsons;
 import com.atguigu.gmall.common.utils.AuthUtils;
 import com.atguigu.gmall.model.enums.OrderStatus;
 import com.atguigu.gmall.model.enums.ProcessStatus;
 import com.atguigu.gmall.model.order.OrderDetail;
 import com.atguigu.gmall.model.order.OrderInfo;
+import com.atguigu.gmall.model.to.mq.OrderMsg;
 import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
 import com.atguigu.gmall.order.mapper.OrderInfoMapper;
 import com.atguigu.gmall.order.service.OrderDetailService;
 import com.atguigu.gmall.order.service.OrderInfoService;
+import com.atguigu.gmall.rabbit.constant.MqConst;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +34,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         implements OrderInfoService {
     @Autowired
     private OrderDetailService orderDetailService;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -42,7 +48,22 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderDetailService.saveBatch(orderDetail);
         //订单插入完成
         //向消息队列发送消息 -> 用户一定时间内未支付就进行关单操作
+        rabbitTemplate.convertAndSend(MqConst.EXCHANGE_ORDER_EVENT,
+                MqConst.RK_ORDER_CREATED,
+                Jsons.toStr(new OrderMsg(orderInfo.getId(), orderInfo.getUserId())));
         return orderInfo.getId();
+    }
+
+    @Override
+    public void changeOrderStatus(Long orderId, Long userId, ProcessStatus status, List<ProcessStatus> expected) {
+        String orderStatus = status.getOrderStatus().name();
+        String processStatus = status.name();
+        //CAS 先比较再修改
+        List<String> expects = expected.stream()
+                .map(ProcessStatus::name)
+                .collect(Collectors.toList());
+        //幂等性修改
+        baseMapper.updateOrderStatus(orderId, userId, orderStatus, processStatus, expects);
     }
 
     private List<OrderDetail> prepareOrderDetail(OrderSubmitVo vo, OrderInfo info) {

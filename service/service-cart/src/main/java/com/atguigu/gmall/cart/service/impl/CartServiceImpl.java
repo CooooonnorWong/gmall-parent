@@ -172,8 +172,9 @@ public class CartServiceImpl implements CartService {
         RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
         executor.submit(() -> {
             RequestContextHolder.setRequestAttributes(requestAttributes);
-            // TODO: 2022/9/14 存在时间差问题
-            updateAllItemsPrice(cartKey, cartInfoList);
+            // 如果传入已经查出来的CartInfo集合则存在时间差问题(此时另外调用删除购物车方法有可能因为此更新方法中的put操作导致无法删除)
+            // 必须让更新方法自己从redis中查
+            updateAllItemsPrice(cartKey);
             RequestContextHolder.resetRequestAttributes();
         });
 
@@ -181,11 +182,13 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void updateAllItemsPrice(String cartKey, List<CartInfo> cartInfoList) {
+    public void updateAllItemsPrice(String cartKey) {
         BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(cartKey);
         RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
-        cartInfoList.stream()
+        hashOps.values()
+                .stream()
                 .parallel()
+                .map(str -> Jsons.toObj(str, CartInfo.class))
                 .forEach(item -> {
                     RequestContextHolder.setRequestAttributes(requestAttributes);
                     BigDecimal price = productFeignClient.getRealTimePrice(item.getSkuId()).getData();
@@ -193,7 +196,10 @@ public class CartServiceImpl implements CartService {
                     item.setCartPrice(item.getSkuPrice().multiply(new BigDecimal(item.getSkuNum().toString())));
                     item.setUpdateTime(new Date());
                     //更新redis中的价格
-                    hashOps.put(item.getSkuId().toString(), Jsons.toStr(item));
+                    //判断是否还存在该key 防止删除购物车后又进行添加
+                    if (hashOps.hasKey(item.getSkuId().toString())) {
+                        hashOps.put(item.getSkuId().toString(), Jsons.toStr(item));
+                    }
                     RequestContextHolder.resetRequestAttributes();
                 });
     }
@@ -207,12 +213,7 @@ public class CartServiceImpl implements CartService {
             RequestContextHolder.resetRequestAttributes();
             return cartList;
         }, executor);
-        CompletableFuture<List<String>> skuIdFuture = CompletableFuture.supplyAsync(() -> {
-            RequestContextHolder.setRequestAttributes(requestAttributes);
-            List<String> skuIds = this.getCheckedItems(cartKey);
-            RequestContextHolder.resetRequestAttributes();
-            return skuIds;
-        }, executor);
+        CompletableFuture<List<String>> skuIdFuture = CompletableFuture.supplyAsync(() -> getCheckedItems(cartKey), executor);
         List<CartInfo> cartList = cartFuture.join();
         List<String> skuIds = skuIdFuture.join();
         return cartList.stream()
@@ -245,7 +246,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void deleteCart(Long skuId, String cartKey) {
+    public void deleteCartItem(Long skuId, String cartKey) {
         BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(cartKey);
         hashOps.delete(skuId.toString());
     }
@@ -262,7 +263,8 @@ public class CartServiceImpl implements CartService {
     @Override
     public List<String> getCheckedItems(String cartKey) {
         BoundHashOperations<String, String, String> hashOps = redisTemplate.boundHashOps(cartKey);
-        return hashOps.values().stream()
+        return hashOps.values()
+                .stream()
                 .map(str -> Jsons.toObj(str, CartInfo.class))
                 .filter(v -> v.getIsChecked() == 1)
                 .map(v -> v.getSkuId().toString())

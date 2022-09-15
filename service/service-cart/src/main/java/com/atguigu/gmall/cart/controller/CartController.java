@@ -42,7 +42,7 @@ public class CartController {
 
     @DeleteMapping("/deleteCart/{skuId}")
     public Result<Object> deleteCart(@PathVariable("skuId") Long skuId) {
-        cartService.deleteCart(skuId, cartService.buildCartKey());
+        cartService.deleteCartItem(skuId, cartService.buildCartKey());
         return Result.ok();
     }
 

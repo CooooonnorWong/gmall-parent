@@ -57,4 +57,12 @@ public interface BusinessService {
      * @return
      */
     boolean checkToken(String tradeNo);
+
+    /**
+     * 关闭超时订单
+     *
+     * @param orderId
+     * @param userId
+     */
+    void closeOrder(Long orderId, Long userId);
 }

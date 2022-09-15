@@ -3,6 +3,7 @@ package com.atguigu.gmall.order;
 import com.atguigu.gmall.common.annotation.EnableAutoExceptionHandler;
 import com.atguigu.gmall.common.annotation.EnableAutoFeignInterceptor;
 import com.atguigu.gmall.common.annotation.EnableThreadPool;
+import com.atguigu.gmall.rabbit.anotation.EnableGmallRabbit;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         "com.atguigu.gmall.feign.product"
 })
 @EnableThreadPool
+@EnableGmallRabbit
 @EnableTransactionManagement
 public class OrderMainApplication {
     public static void main(String[] args) {
