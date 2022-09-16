@@ -3,11 +3,13 @@ package com.atguigu.gmall.order;
 import com.atguigu.gmall.common.annotation.EnableAutoExceptionHandler;
 import com.atguigu.gmall.common.annotation.EnableAutoFeignInterceptor;
 import com.atguigu.gmall.common.annotation.EnableThreadPool;
+import com.atguigu.gmall.feign.ware.fallback.WareFeignClientFallback;
 import com.atguigu.gmall.rabbit.anotation.EnableGmallRabbit;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @date 2022/9/13
  */
 @SpringCloudApplication
+@Import(WareFeignClientFallback.class)
 @MapperScan("com.atguigu.gmall.order.mapper")
 @EnableAutoFeignInterceptor
 @EnableAutoExceptionHandler

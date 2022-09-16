@@ -49,7 +49,7 @@ public class PaymentController {
 //            log.info("验签通过,正在修改订单信息");
 //        }
 
-        return "redirect:http://gmall.com/pay/success.html";
+        return "redirect:http://www.gmall.com/pay/success.html";
     }
 
     /**

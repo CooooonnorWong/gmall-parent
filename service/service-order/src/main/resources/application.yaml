@@ -16,7 +16,9 @@ spring:
 #      simple:
 #        acknowledge-mode: manual #开启手动确认机制，除非程序员自己ack，否则服务器都认为消息还未回复
 #        batch-size: 12
-
 gmall:
   ware:
     url: http://localhost:10001/
+feign:
+  sentinel:
+    enabled: true
