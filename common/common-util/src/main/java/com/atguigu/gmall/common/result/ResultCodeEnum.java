@@ -30,9 +30,10 @@ public enum ResultCodeEnum {
     COUPON_LIMIT_GET(221, "优惠券已发放完毕"),
     CART_ITEM_SKUNUM_OVERFLOW(3001, "单个商品不允许超过200哦"),
     CART_OVERFLOW(222, "购物车物品太多啦"),
-    TOKEN_INVALID(4000,"页面已过期，请重新刷新页面"),
-    ORDER_NO_STOCK(4001,"订单商品库存不足："),
-    ORDER_PRICE_CHANGED(4002,"订单中以下商品价格变化，请刷新页面再试；");
+    TOKEN_INVALID(4000, "页面已过期，请重新刷新页面"),
+    ORDER_NO_STOCK(4001, "订单商品库存不足："),
+    ORDER_PRICE_CHANGED(4002, "订单中以下商品价格变化，请刷新页面再试；"),
+    ORDER_EXPIRED(4003, "订单已经过期,请重新下单再试");
 
     private Integer code;
 

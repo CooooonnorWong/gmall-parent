@@ -22,4 +22,10 @@ public class PaymentController {
 
         return orderService.loadPayPage(orderId, model);
     }
+
+    @GetMapping("/pay/success.html")
+    public String success() {
+
+        return "payment/success";
+    }
 }

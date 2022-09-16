@@ -15,6 +15,7 @@ public class DateUtil {
 
     /**
      * 获取两个时间差 单位：秒
+     *
      * @param date1
      * @param date2
      * @return
@@ -33,6 +34,17 @@ public class DateUtil {
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         return sdf.format(date);
 
+    }
+
+    /**
+     * 按照指定格式格式化日期
+     *
+     * @param date
+     * @return
+     */
+    public static String formatDate(Date date, String pattern) {
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        return sdf.format(date);
     }
 
     /**

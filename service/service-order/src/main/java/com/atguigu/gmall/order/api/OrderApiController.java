@@ -1,6 +1,7 @@
 package com.atguigu.gmall.order.api;
 
 import com.atguigu.gmall.common.result.Result;
+import com.atguigu.gmall.common.utils.AuthUtils;
 import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.model.vo.order.OrderConfirmDataVo;
 import com.atguigu.gmall.order.business.BusinessService;
@@ -33,8 +34,8 @@ public class OrderApiController {
     @GetMapping("/getOrderInfo")
     public Result<OrderInfo> getOrderInfo(@RequestParam("orderId") Long orderId) {
         OrderInfo orderInfo = orderInfoService.getOne(new LambdaQueryWrapper<OrderInfo>()
-                .select(OrderInfo::getId, OrderInfo::getTotalAmount,OrderInfo::getExpireTime)
-                .eq(OrderInfo::getId, orderId));
+                .eq(OrderInfo::getId, orderId)
+                .eq(OrderInfo::getUserId, AuthUtils.currentAuthInfo().getUserId()));
         return Result.ok(orderInfo);
     }
 
