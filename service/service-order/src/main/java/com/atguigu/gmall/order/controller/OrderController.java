@@ -25,6 +25,7 @@ public class OrderController {
     @PostMapping("/auth/submitOrder")
     public Result<String> submitOrder(@RequestParam("tradeNo") String tradeNo,
                                       @RequestBody OrderSubmitVo orderSubmitVo) {
+//        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         Long orderId = businessService.submitOrder(orderSubmitVo, tradeNo);
         return Result.ok(orderId.toString());
     }

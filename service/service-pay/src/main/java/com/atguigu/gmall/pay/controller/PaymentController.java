@@ -42,7 +42,7 @@ public class PaymentController {
      * @return
      * @throws AlipayApiException
      */
-    @GetMapping("/paysuccess")
+    @RequestMapping("/paysuccess")
     public String paySuccess(@RequestParam Map<String, String> params) throws AlipayApiException {
 //        if (paymentService.rsaCheck(params)) {
 //            //验签通过
@@ -60,7 +60,7 @@ public class PaymentController {
      * @throws AlipayApiException
      */
     @ResponseBody
-    @GetMapping("/success/notify")
+    @RequestMapping("/success/notify")
     public String successNotify(@RequestParam Map<String, String> params) throws AlipayApiException {
         if (!paymentService.rsaCheck(params)) {
             return "error";

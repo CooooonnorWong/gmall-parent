@@ -57,7 +57,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public boolean rsaCheck(Map<String, String> params) throws AlipayApiException {
-        return AlipaySignature.certVerifyV1(params,
+        return AlipaySignature.rsaCheckV1(params,
                 alipayProperties.getAlipayPublicKey(),
                 alipayProperties.getCharset(),
                 alipayProperties.getSignType());

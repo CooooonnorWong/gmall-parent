@@ -146,7 +146,7 @@ public class BusinessServiceImpl implements BusinessService {
     public List<String> checkStock(List<CartInfoVo> orderDetailList) {
 //        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         return orderDetailList.stream()
-                .parallel()
+//                .parallel()
                 .filter(cartInfoVo -> {
 //                    RequestContextHolder.setRequestAttributes(attributes);
                     String hasStock = wareFeignClient.hasStock(cartInfoVo.getSkuId(), cartInfoVo.getSkuNum());
@@ -161,7 +161,7 @@ public class BusinessServiceImpl implements BusinessService {
     public List<String> checkPrice(List<CartInfoVo> orderDetailList) {
 //        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         return orderDetailList.stream()
-                .parallel()
+//                .parallel()
                 .filter(cartInfoVo -> {
 //                    RequestContextHolder.setRequestAttributes(attributes);
                     BigDecimal realPrice = productFeignClient.getRealTimePrice(cartInfoVo.getSkuId()).getData();
