@@ -54,4 +54,12 @@ public interface SysRedisConst {
      * 重试订单库存扣减
      */
     String MQ_RETRY_WARE_STOCK_DEDUCE = "mq:retry:ware:stock:deduce:";
+    /**
+     * 秒杀商品缓存键
+     */
+    String CACHE_SECKILL_GOODS = "seckill:goods:";
+    /**
+     * 秒杀商品库存缓存键
+     */
+    String CACHE_SECKILL_GOODS_STOCK = "seckill:goods:stock:";
 }
