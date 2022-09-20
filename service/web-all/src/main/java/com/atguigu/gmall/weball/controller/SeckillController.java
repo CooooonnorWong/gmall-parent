@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -24,5 +25,12 @@ public class SeckillController {
         List<SeckillGoods> goods = seckillFeignClient.getCurrentSeckillGoods().getData();
         model.addAttribute("list", goods);
         return "seckill/index";
+    }
+
+    @GetMapping("/seckill/{skuId}.html")
+    public String seckillGoodsPage(@PathVariable("skuId") Long skuId, Model model) {
+        SeckillGoods goods = seckillFeignClient.getSeckillGoodsInfo(skuId).getData();
+        model.addAttribute("item", goods);
+        return "seckill/item";
     }
 }

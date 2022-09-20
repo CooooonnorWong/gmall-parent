@@ -4,6 +4,7 @@ import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.activity.SeckillGoods;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
@@ -22,4 +23,13 @@ public interface SeckillFeignClient {
      */
     @GetMapping("/today/seckillGoods")
     Result<List<SeckillGoods>> getCurrentSeckillGoods();
+
+    /**
+     * 查询商品详情
+     *
+     * @param skuId
+     * @return
+     */
+    @GetMapping("/goodsInfo/{skuId}")
+    Result<SeckillGoods> getSeckillGoodsInfo(@PathVariable("skuId") Long skuId);
 }

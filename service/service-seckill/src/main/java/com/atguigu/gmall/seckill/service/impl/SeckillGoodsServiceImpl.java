@@ -34,6 +34,11 @@ public class SeckillGoodsServiceImpl extends ServiceImpl<SeckillGoodsMapper, Sec
     public List<SeckillGoods> getCurrentSeckillGoodsCache() {
         return cacheService.getCachedSeckillGoods();
     }
+
+    @Override
+    public SeckillGoods getGoodsInfo(Long skuId) {
+        return cacheService.getSeckillGoodsInfo(skuId);
+    }
 }
 
 

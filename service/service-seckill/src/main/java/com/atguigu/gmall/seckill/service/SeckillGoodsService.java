@@ -14,6 +14,7 @@ import java.util.List;
 public interface SeckillGoodsService extends IService<SeckillGoods> {
     /**
      * 从数据库中获取当天参加秒杀的商品列表
+     *
      * @return
      */
     List<SeckillGoods> getTodaySeckillGoodsList();
@@ -24,4 +25,12 @@ public interface SeckillGoodsService extends IService<SeckillGoods> {
      * @return
      */
     List<SeckillGoods> getCurrentSeckillGoodsCache();
+
+    /**
+     * 获取商品详情
+     *
+     * @param skuId
+     * @return
+     */
+    SeckillGoods getGoodsInfo(Long skuId);
 }

@@ -85,4 +85,14 @@ public class CacheServiceImpl implements CacheService {
                 .map(json -> Jsons.toObj(json.toString(), SeckillGoods.class))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public SeckillGoods getSeckillGoodsInfo(Long skuId) {
+        SeckillGoods goods = localCache.get(skuId);
+        if (goods == null) {
+            this.syncSeckillGoodsCache();
+            goods = localCache.get(skuId);
+        }
+        return goods;
+    }
 }

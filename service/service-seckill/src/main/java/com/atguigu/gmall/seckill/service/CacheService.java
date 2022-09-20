@@ -39,4 +39,12 @@ public interface CacheService {
      * @return
      */
     List<SeckillGoods> getSeckillGoodsCacheFromRedis();
+
+    /**
+     * 获取秒杀商品详情
+     *
+     * @param skuId
+     * @return
+     */
+    SeckillGoods getSeckillGoodsInfo(Long skuId);
 }
