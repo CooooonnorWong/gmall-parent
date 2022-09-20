@@ -25,6 +25,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -53,7 +54,7 @@ public class OrderPaidListener {
     @Autowired
     private ExecutorService executor;
 
-
+    @Transactional(rollbackFor = Exception.class)
     @RabbitListener(
             bindings = @QueueBinding(
                     value = @Queue(value = MqConst.QUEUE_ORDER_PAID, durable = "true", exclusive = "false", autoDelete = "false"),

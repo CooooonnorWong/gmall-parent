@@ -57,7 +57,7 @@ public class OrderStockDeduceListener {
                     processStatus = ProcessStatus.WAITING_DELEVER;
                     break;
                 case "OUT_OF_STOCK":
-                    processStatus = ProcessStatus.STOCK_EXCEPTION;
+                    processStatus = ProcessStatus.STOCK_OVER_EXCEPTION;
                     break;
                 default:
                     processStatus = ProcessStatus.PAID;

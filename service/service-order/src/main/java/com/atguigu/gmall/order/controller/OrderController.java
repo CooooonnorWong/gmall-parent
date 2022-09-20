@@ -1,10 +1,13 @@
 package com.atguigu.gmall.order.controller;
 
 import com.atguigu.gmall.common.result.Result;
+import com.atguigu.gmall.common.utils.AuthUtils;
 import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
 import com.atguigu.gmall.order.biz.OrderBizService;
+import com.atguigu.gmall.order.service.OrderDetailService;
 import com.atguigu.gmall.order.service.OrderInfoService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +24,8 @@ public class OrderController {
     private OrderBizService orderBizService;
     @Autowired
     private OrderInfoService orderInfoService;
+    @Autowired
+    private OrderDetailService orderDetailService;
 
     @PostMapping("/auth/submitOrder")
     public Result<String> submitOrder(@RequestParam("tradeNo") String tradeNo,
@@ -34,8 +39,12 @@ public class OrderController {
     public Result<Page<OrderInfo>> getPageOrderList(@PathVariable("page") Integer page,
                                                     @PathVariable("limit") Integer limit) {
         Page<OrderInfo> pages = new Page<>(page, limit);
-        // TODO: 2022/9/14 数据待完善
-        orderInfoService.page(pages);
+        Long userId = AuthUtils.currentAuthInfo().getUserId();
+        orderInfoService.page(pages, new LambdaQueryWrapper<OrderInfo>()
+                .eq(OrderInfo::getUserId, userId));
+        pages.getRecords().stream()
+                .parallel()
+                .forEach(orderInfo -> orderInfo.setOrderDetailList(orderDetailService.getOrderDetails(orderInfo.getId(), userId)));
         return Result.ok(pages);
     }
 
