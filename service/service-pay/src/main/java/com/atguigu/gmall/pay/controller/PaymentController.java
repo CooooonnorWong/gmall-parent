@@ -67,7 +67,8 @@ public class PaymentController {
         }
         //验签通过
         log.info("异步通知抵达。支付成功，验签通过。数据：{}", Jsons.toStr(params));
-        // TODO: 2022/9/17 修改订单信息
+        // 发送消息,修改订单信息
+        paymentService.sendOrderPaidMsg(params);
         log.info("验签通过,正在修改订单信息");
         return "success";
     }

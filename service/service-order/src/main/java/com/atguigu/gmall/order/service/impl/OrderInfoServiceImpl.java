@@ -39,8 +39,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Long saveOrder(OrderSubmitVo orderSubmitVo, String tradeNo) {
-        OrderInfo orderInfo = prepareOrderInfo(orderSubmitVo, tradeNo);
+    public Long saveOrder(OrderSubmitVo orderSubmitVo, String outTradeNo) {
+        OrderInfo orderInfo = prepareOrderInfo(orderSubmitVo, outTradeNo);
         //保存订单信息
         this.save(orderInfo);
         List<OrderDetail> orderDetail = prepareOrderDetail(orderSubmitVo, orderInfo);
@@ -88,7 +88,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .collect(Collectors.toList());
     }
 
-    private OrderInfo prepareOrderInfo(OrderSubmitVo orderSubmitVo, String tradeNo) {
+    private OrderInfo prepareOrderInfo(OrderSubmitVo orderSubmitVo, String outTradeNo) {
         OrderInfo info = new OrderInfo();
         //收货人
         info.setConsignee(orderSubmitVo.getConsignee());
@@ -103,7 +103,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //用户ID
         info.setUserId(AuthUtils.currentAuthInfo().getUserId());
         //交易流水号(对外交易号)
-        info.setOutTradeNo(tradeNo);
+        info.setOutTradeNo(outTradeNo);
         //交易体。 拿到这个订单中购买的第一个商品的名字，作为订单的体
         info.setTradeBody(orderSubmitVo.getOrderDetailList().get(0).getSkuName());
         //创建时间

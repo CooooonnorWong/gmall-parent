@@ -1,22 +1,26 @@
-package com.atguigu.gmall.order.business.impl;
+package com.atguigu.gmall.order.biz.impl;
 
 import com.atguigu.gmall.common.constant.SysRedisConst;
 import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
+import com.atguigu.gmall.common.util.Jsons;
 import com.atguigu.gmall.common.utils.AuthUtils;
 import com.atguigu.gmall.feign.cart.CartFeignClient;
 import com.atguigu.gmall.feign.product.ProductFeignClient;
 import com.atguigu.gmall.feign.user.UserFeignClient;
 import com.atguigu.gmall.feign.ware.WareFeignClient;
 import com.atguigu.gmall.model.enums.ProcessStatus;
+import com.atguigu.gmall.model.order.OrderDetail;
+import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.model.user.UserAddress;
-import com.atguigu.gmall.model.vo.order.CartInfoVo;
-import com.atguigu.gmall.model.vo.order.OrderConfirmDataVo;
-import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
-import com.atguigu.gmall.order.business.BusinessService;
+import com.atguigu.gmall.model.vo.order.*;
+import com.atguigu.gmall.order.biz.OrderBizService;
+import com.atguigu.gmall.order.service.OrderDetailService;
 import com.atguigu.gmall.order.service.OrderInfoService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -38,11 +43,12 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class BusinessServiceImpl implements BusinessService {
+public class OrderBizServiceImpl implements OrderBizService {
     @Autowired
     private CartFeignClient cartFeignClient;
     @Autowired
     private UserFeignClient userFeignClient;
+    @Qualifier("com.atguigu.gmall.feign.ware.WareFeignClient")
     @Autowired
     private WareFeignClient wareFeignClient;
     @Autowired
@@ -53,6 +59,8 @@ public class BusinessServiceImpl implements BusinessService {
     private ExecutorService executor;
     @Autowired
     private OrderInfoService orderInfoService;
+    @Autowired
+    private OrderDetailService orderDetailService;
 
     @Override
     public OrderConfirmDataVo getOrderConfirmData() {
@@ -94,7 +102,7 @@ public class BusinessServiceImpl implements BusinessService {
         }, executor);
         CompletableFuture<Void> tradeNoFuture = CompletableFuture.runAsync(() -> {
             RequestContextHolder.setRequestAttributes(attributes);
-            confirmDataVo.setTradeNo(generateTradeNo());
+            confirmDataVo.setTradeNo(generateOutTradeNo());
             RequestContextHolder.resetRequestAttributes();
         }, executor);
         CompletableFuture.allOf(cartInfoVoFuture, totalNumFuture, totalAmountFuture, userAddressFuture, tradeNoFuture).join();
@@ -102,20 +110,20 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public String generateTradeNo() {
-        String tradeNo = System.currentTimeMillis() + "" + AuthUtils.currentAuthInfo().getUserId() + UUID.randomUUID().toString().replace("-", "");
+    public String generateOutTradeNo() {
+        String tradeNo = System.currentTimeMillis() + "_" + AuthUtils.currentAuthInfo().getUserId() + "_" + UUID.randomUUID().toString().replace("-", "");
         redisTemplate.opsForValue().set(SysRedisConst.ORDER_TEMP_TOKEN + tradeNo, "1", 15, TimeUnit.MINUTES);
         return tradeNo;
     }
 
     @Override
-    public Long submitOrder(OrderSubmitVo orderSubmitVo, String tradeNo) {
+    public Long submitOrder(OrderSubmitVo orderSubmitVo, String outTradeNo) {
         //1.查令牌
         //2.验证令牌
-        if (!checkToken(tradeNo)) {
+        if (!checkToken(outTradeNo)) {
             throw new GmallException(ResultCodeEnum.TOKEN_INVALID);
         }
-        log.info("令牌验证通过: {}", tradeNo);
+        log.info("令牌验证通过: {}", outTradeNo);
         //3.验证库存
         List<String> noStockSkus = checkStock(orderSubmitVo.getOrderDetailList());
         if (noStockSkus.size() > 0) {
@@ -136,7 +144,7 @@ public class BusinessServiceImpl implements BusinessService {
         log.info("价格验证通过");
         //5.保存订单
         //6.发送延迟关单消息,用户规定时间内未支付就关闭订单
-        Long orderId = orderInfoService.saveOrder(orderSubmitVo, tradeNo);
+        Long orderId = orderInfoService.saveOrder(orderSubmitVo, outTradeNo);
         //7.清除购物车中已经提交订单的商品
         cartFeignClient.deleteChecked();
         return orderId;
@@ -198,5 +206,96 @@ public class BusinessServiceImpl implements BusinessService {
         ProcessStatus status = ProcessStatus.CLOSED;
         //CAS 先比较再修改
         orderInfoService.changeOrderStatus(orderId, userId, status, expected);
+    }
+
+    @Override
+    public List<WareChildOrderVo> splitOrder(OrderWareMapVo vo) {
+        Long orderId = vo.getOrderId();
+        OrderInfo originOrder = orderInfoService.getById(orderId);
+        originOrder.setOrderDetailList(orderDetailService.getOrderDetails(orderId, originOrder.getUserId()));
+
+        List<WareMapItem> wareMapItems = Jsons.toObj(vo.getWareSkuMap(), new TypeReference<List<WareMapItem>>() {
+        });
+        List<OrderInfo> splitOrders = wareMapItems.stream()
+                .parallel()
+                .map(item -> saveChildOrderInfo(item, originOrder))
+                .collect(Collectors.toList());
+        orderInfoService.changeOrderStatus(originOrder.getId(), originOrder.getUserId(), ProcessStatus.SPLIT, Arrays.asList(ProcessStatus.PAID));
+
+        return splitOrders2WareChildOrderVo(splitOrders);
+    }
+
+    private List<WareChildOrderVo> splitOrders2WareChildOrderVo(List<OrderInfo> splitOrders) {
+        return splitOrders.stream()
+                .parallel()
+                .map(orderInfo -> {
+                    WareChildOrderVo childOrderVo = new WareChildOrderVo();
+                    childOrderVo.setOrderId(orderInfo.getId());
+                    childOrderVo.setConsignee(orderInfo.getConsignee());
+                    childOrderVo.setConsigneeTel(orderInfo.getConsigneeTel());
+                    childOrderVo.setOrderComment(orderInfo.getOrderComment());
+                    childOrderVo.setOrderBody(orderInfo.getTradeBody());
+                    childOrderVo.setDeliveryAddress(orderInfo.getDeliveryAddress());
+                    childOrderVo.setPaymentWay(orderInfo.getPaymentWay());
+                    childOrderVo.setWareId(orderInfo.getWareId());
+                    childOrderVo.setDetails(orderInfo.getOrderDetailList()
+                            .stream()
+                            .parallel()
+                            .map(orderDetail -> {
+                                WareChildOrderDetailItemVo childOrderDetailItemVo = new WareChildOrderDetailItemVo();
+                                childOrderDetailItemVo.setSkuId(orderDetail.getSkuId());
+                                childOrderDetailItemVo.setSkuNum(orderDetail.getSkuNum());
+                                childOrderDetailItemVo.setSkuName(orderDetail.getSkuName());
+                                return childOrderDetailItemVo;
+                            })
+                            .collect(Collectors.toList()));
+
+                    return childOrderVo;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private OrderInfo saveChildOrderInfo(WareMapItem item, OrderInfo originOrder) {
+        List<Long> skuIds = item.getSkuIds();
+        Long wareId = item.getWareId();
+        List<OrderDetail> currentOrderDetails = originOrder.getOrderDetailList()
+                .stream()
+                .filter(orderDetail -> skuIds.contains(orderDetail.getSkuId()))
+                .collect(Collectors.toList());
+
+        OrderInfo childOrder = new OrderInfo();
+        childOrder.setConsignee(originOrder.getConsignee());
+        childOrder.setConsigneeTel(originOrder.getConsigneeTel());
+        childOrder.setTotalAmount(currentOrderDetails.stream()
+                .map(orderDetail -> orderDetail.getOrderPrice().multiply(new BigDecimal(orderDetail.getSkuNum().toString())))
+                .reduce(BigDecimal::add)
+                .get());
+        childOrder.setOrderStatus(originOrder.getOrderStatus());
+        childOrder.setUserId(originOrder.getUserId());
+        childOrder.setPaymentWay(originOrder.getPaymentWay());
+        childOrder.setDeliveryAddress(originOrder.getDeliveryAddress());
+        childOrder.setOrderComment(originOrder.getOrderComment());
+        childOrder.setOutTradeNo(originOrder.getOutTradeNo());
+        childOrder.setTradeBody(currentOrderDetails.get(0).getSkuName());
+        childOrder.setCreateTime(new Date());
+        childOrder.setExpireTime(originOrder.getExpireTime());
+        childOrder.setProcessStatus(originOrder.getProcessStatus());
+        //对接物流
+        childOrder.setTrackingNo("");
+        childOrder.setParentOrderId(originOrder.getId());
+        childOrder.setImgUrl(currentOrderDetails.get(0).getImgUrl());
+        childOrder.setOrderDetailList(currentOrderDetails);
+        childOrder.setWareId(wareId.toString());
+        childOrder.setProvinceId(0L);
+        childOrder.setActivityReduceAmount(new BigDecimal("0"));
+        childOrder.setCouponAmount(new BigDecimal("0"));
+        childOrder.setOriginalTotalAmount(new BigDecimal("0"));
+        childOrder.setRefundableTime(originOrder.getRefundableTime());
+        childOrder.setFeightFee(originOrder.getFeightFee());
+        childOrder.setOperateTime(new Date());
+        orderInfoService.save(childOrder);
+        childOrder.getOrderDetailList().stream().parallel().forEach(orderDetail -> orderDetail.setOrderId(childOrder.getId()));
+        orderDetailService.saveBatch(childOrder.getOrderDetailList());
+        return childOrder;
     }
 }

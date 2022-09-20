@@ -25,7 +25,7 @@ spring:
     publisher-returns: true
     listener:
       simple:
-        cknowledge-mode: manual
+        acknowledge-mode: manual
         prefetch: 1 # 消费者每次从队列获取的消息数量。此属性当不设置时为：轮询分发，设置为1为：公平分发
   redis:
     host: 192.168.6.200
@@ -59,4 +59,4 @@ spring:
 
 order:
   split:
-    url: http://localhost:8204/api/order/orderSplit
+    url: http://api.gmall.com/api/order/orderSplit

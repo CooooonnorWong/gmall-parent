@@ -3,7 +3,7 @@ package com.atguigu.gmall.order.controller;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
-import com.atguigu.gmall.order.business.BusinessService;
+import com.atguigu.gmall.order.biz.OrderBizService;
 import com.atguigu.gmall.order.service.OrderInfoService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     @Autowired
-    private BusinessService businessService;
+    private OrderBizService orderBizService;
     @Autowired
     private OrderInfoService orderInfoService;
 
@@ -26,7 +26,7 @@ public class OrderController {
     public Result<String> submitOrder(@RequestParam("tradeNo") String tradeNo,
                                       @RequestBody OrderSubmitVo orderSubmitVo) {
 //        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        Long orderId = businessService.submitOrder(orderSubmitVo, tradeNo);
+        Long orderId = orderBizService.submitOrder(orderSubmitVo, tradeNo);
         return Result.ok(orderId.toString());
     }
 

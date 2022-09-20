@@ -24,4 +24,11 @@ public interface PaymentService {
      * @return
      */
     boolean rsaCheck(Map<String, String> params) throws AlipayApiException;
+
+    /**
+     * 发送订单已支付消息到队列
+     *
+     * @param params
+     */
+    void sendOrderPaidMsg(Map<String, String> params);
 }

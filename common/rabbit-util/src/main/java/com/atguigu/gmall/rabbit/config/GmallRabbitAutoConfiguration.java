@@ -1,5 +1,6 @@
 package com.atguigu.gmall.rabbit.config;
 
+import com.atguigu.gmall.rabbit.service.MqService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
@@ -48,5 +49,10 @@ public class GmallRabbitAutoConfiguration {
         template.setRetryTemplate(new RetryTemplate());
 
         return template;
+    }
+
+    @Bean
+    public MqService mqService() {
+        return new MqService();
     }
 }

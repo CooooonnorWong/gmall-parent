@@ -45,5 +45,13 @@ public interface SysRedisConst {
     /**
      * 重试关闭订单
      */
-    String MQ_RETRY_CLOSE_ORDER = "mq:retry:close:order:";
+    String MQ_RETRY_CLOSE_ORDER = "mq:retry:order:close:";
+    /**
+     * 重试订单支付
+     */
+    String MQ_RETRY_ORDER_PAID = "mq:retry:order:paid:";
+    /**
+     * 重试订单库存扣减
+     */
+    String MQ_RETRY_WARE_STOCK_DEDUCE = "mq:retry:ware:stock:deduce:";
 }

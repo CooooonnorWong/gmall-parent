@@ -1,8 +1,6 @@
-package com.atguigu.gmall.order.business;
+package com.atguigu.gmall.order.biz;
 
-import com.atguigu.gmall.model.vo.order.CartInfoVo;
-import com.atguigu.gmall.model.vo.order.OrderConfirmDataVo;
-import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
+import com.atguigu.gmall.model.vo.order.*;
 
 import java.util.List;
 
@@ -10,7 +8,7 @@ import java.util.List;
  * @author Connor
  * @date 2022/9/13
  */
-public interface BusinessService {
+public interface OrderBizService {
     /**
      * 获取购物车结算商品信息
      *
@@ -23,7 +21,7 @@ public interface BusinessService {
      *
      * @return
      */
-    String generateTradeNo();
+    String generateOutTradeNo();
 
     /**
      * 提交订单
@@ -65,4 +63,12 @@ public interface BusinessService {
      * @param userId
      */
     void closeOrder(Long orderId, Long userId);
+
+    /**
+     * 根据情况拆分订单
+     *
+     * @param vo
+     * @return
+     */
+    List<WareChildOrderVo> splitOrder(OrderWareMapVo vo);
 }

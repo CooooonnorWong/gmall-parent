@@ -4,7 +4,7 @@ import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.utils.AuthUtils;
 import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.model.vo.order.OrderConfirmDataVo;
-import com.atguigu.gmall.order.business.BusinessService;
+import com.atguigu.gmall.order.biz.OrderBizService;
 import com.atguigu.gmall.order.service.OrderInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/inner/rpc/order")
 public class OrderApiController {
     @Autowired
-    private BusinessService businessService;
+    private OrderBizService orderBizService;
     @Autowired
     private OrderInfoService orderInfoService;
 
     @GetMapping("/getOrderConfirmData")
     public Result<OrderConfirmDataVo> getOrderConfirmData() {
-        OrderConfirmDataVo vo = businessService.getOrderConfirmData();
+        OrderConfirmDataVo vo = orderBizService.getOrderConfirmData();
         return Result.ok(vo);
     }
 

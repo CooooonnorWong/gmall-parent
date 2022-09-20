@@ -12,6 +12,8 @@ import com.atguigu.gmall.feign.order.OrderFeignClient;
 import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.pay.config.AlipayProperties;
 import com.atguigu.gmall.pay.service.PaymentService;
+import com.atguigu.gmall.rabbit.constant.MqConst;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +33,8 @@ public class PaymentServiceImpl implements PaymentService {
     private AlipayClient alipayClient;
     @Autowired
     private AlipayProperties alipayProperties;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public String getAlipayHtmlPage(Long orderId) throws AlipayApiException {
@@ -61,5 +65,12 @@ public class PaymentServiceImpl implements PaymentService {
                 alipayProperties.getAlipayPublicKey(),
                 alipayProperties.getCharset(),
                 alipayProperties.getSignType());
+    }
+
+    @Override
+    public void sendOrderPaidMsg(Map<String, String> params) {
+        rabbitTemplate.convertAndSend(MqConst.EXCHANGE_ORDER_EVENT,
+                MqConst.RK_ORDER_PAID,
+                Jsons.toStr(params));
     }
 }

@@ -57,6 +57,7 @@ gmall:
   auth:
     authUrl:
       - /order/**
+      - /api/**/auth/**
       - /trade.html
     noneAuthUrl:
       - /css/**
