@@ -2,6 +2,8 @@ package com.atguigu.gmall.seckill.api;
 
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.activity.SeckillGoods;
+import com.atguigu.gmall.model.vo.seckill.SeckillOrderConfirmVo;
+import com.atguigu.gmall.seckill.biz.SeckillBizService;
 import com.atguigu.gmall.seckill.service.SeckillGoodsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,8 @@ public class SeckillApiController {
 
     @Autowired
     private SeckillGoodsService seckillGoodsService;
+    @Autowired
+    private SeckillBizService seckillBizService;
 
     /**
      * 获取当天秒杀商品信息
@@ -43,5 +47,17 @@ public class SeckillApiController {
     public Result<SeckillGoods> getSeckillGoodsInfo(@PathVariable("skuId") Long skuId) {
         SeckillGoods goods = seckillGoodsService.getGoodsInfo(skuId);
         return Result.ok(goods);
+    }
+
+    /**
+     * 获取秒杀订单确认页详情
+     *
+     * @param skuId
+     * @return
+     */
+    @GetMapping("/getSeckillOrderConfirmVo/{skuId}")
+    public Result<SeckillOrderConfirmVo> getSeckillOrderConfirmVo(@PathVariable("skuId") Long skuId) {
+        SeckillOrderConfirmVo vo = seckillBizService.getSeckillOrderConfirmVo(skuId);
+        return Result.ok(vo);
     }
 }

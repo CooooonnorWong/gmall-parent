@@ -3,8 +3,11 @@ package com.atguigu.gmall.seckill.service.impl;
 import com.atguigu.gmall.common.constant.SysRedisConst;
 import com.atguigu.gmall.common.util.DateUtil;
 import com.atguigu.gmall.common.util.Jsons;
+import com.atguigu.gmall.common.utils.AuthUtils;
 import com.atguigu.gmall.model.activity.SeckillGoods;
+import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.seckill.service.CacheService;
+import com.atguigu.gmall.seckill.util.BizUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -94,5 +97,46 @@ public class CacheServiceImpl implements CacheService {
             goods = localCache.get(skuId);
         }
         return goods;
+    }
+
+    @Override
+    public void cacheSeckillCode(String code) {
+        String key = SysRedisConst.CACHE_SECKILL_CODE + code;
+        if (!redisTemplate.hasKey(key)) {
+            redisTemplate.opsForValue().set(key, "1", 1L, TimeUnit.DAYS);
+        }
+    }
+
+    @Override
+    public boolean checkSeckillCode(Long skuId, String seckillCode) {
+        String currentCode = BizUtil.generateSeckillCode(skuId, AuthUtils.currentAuthInfo().getUserId(), DateUtil.formatDate(new Date()));
+        return currentCode.equals(seckillCode) && redisTemplate.hasKey(SysRedisConst.CACHE_SECKILL_CODE + seckillCode);
+    }
+
+    @Override
+    public Long increaseRequestCount(String code) {
+        return redisTemplate.opsForValue().increment(SysRedisConst.CACHE_SECKILL_CODE + code);
+    }
+
+    @Override
+    public Long decreaseSeckillGoodsStock(Long skuId) {
+        return redisTemplate.opsForValue().decrement(SysRedisConst.CACHE_SECKILL_GOODS_STOCK + skuId);
+    }
+
+    @Override
+    public void cacheOrderInfo(OrderInfo order, String code) {
+        redisTemplate.opsForValue().set(SysRedisConst.CACHE_SECKILL_ORDER + code, Jsons.toStr(order), 1L, TimeUnit.DAYS);
+    }
+
+    @Override
+    public void successToDeduceStock(String key) {
+        OrderInfo order = Jsons.toObj(redisTemplate.opsForValue().get(key), OrderInfo.class);
+        order.setOperateTime(new Date());
+        redisTemplate.opsForValue().set(key, Jsons.toStr(order), 1L, TimeUnit.DAYS);
+    }
+
+    @Override
+    public void failToDeduceStock(String key) {
+        redisTemplate.opsForValue().set(key, "X");
     }
 }

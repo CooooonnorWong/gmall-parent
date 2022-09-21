@@ -19,4 +19,12 @@ public interface UserAddressService extends IService<UserAddress> {
      * @return
      */
     List<UserAddress> getUserAddress();
+
+    /**
+     * 获取默认用户收货地址
+     *
+     * @return
+     * @param userId
+     */
+    UserAddress getDefaultUserAddress(Long userId);
 }

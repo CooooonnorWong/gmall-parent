@@ -26,6 +26,14 @@ public class UserAddressServiceImpl extends ServiceImpl<UserAddressMapper, UserA
         return baseMapper.selectList(new LambdaQueryWrapper<UserAddress>()
                 .eq(UserAddress::getUserId, userId));
     }
+
+    @Override
+    public UserAddress getDefaultUserAddress(Long userId) {
+        return baseMapper.selectOne(new LambdaQueryWrapper<UserAddress>()
+                .eq(UserAddress::getUserId, userId)
+                .eq(UserAddress::getIsDefault, "1"));
+
+    }
 }
 
 

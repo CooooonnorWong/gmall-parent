@@ -21,6 +21,10 @@ public interface MqConst {
      *
      */
     String EXCHANGE_WARE_ORDER = "exchange.direct.ware.order";
+    /**
+     * 秒杀交换机
+     */
+    String EXCHANGE_SECKILL_EVENT = "seckill-event-exchange";
 //========================Queue=========================
 
     /**
@@ -42,6 +46,14 @@ public interface MqConst {
      *
      */
     String QUEUE_WARE_ORDER = "queue.ware.order";
+    /**
+     * 等待扣减库存的秒杀订单队列
+     */
+    String QUEUE_SECKILL_ORDERWAIT = "seckill-orderwait-queue";
+    /**
+     * 秒杀成功订单创建队列
+     */
+    String QUEUE_ORDER_SECKILL_ORDER_CREATED = "order-seckill-created-queue";
 //=====================Routing Key======================
 
     /**
@@ -66,4 +78,12 @@ public interface MqConst {
      *
      */
     String RK_WARE_ORDER = "ware.order";
+    /**
+     * 等待扣减库存的秒杀路由键
+     */
+    String RK_SECKILL_ORDERWAIT = "seckill.order.wait";
+    /**
+     * 秒杀商品订单创建路由键
+     */
+    String RK_ORDER_SECKILL_CREATED = "order.seckill.created";
 }

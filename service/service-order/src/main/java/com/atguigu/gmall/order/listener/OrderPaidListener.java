@@ -83,6 +83,7 @@ public class OrderPaidListener {
             log.info("减库存消息发送成功,订单ID:{}", paymentInfo.getOrderId());
             channel.basicAck(tag, false);
         } catch (Exception e) {
+            e.printStackTrace();
             String uniqueKey = SysRedisConst.MQ_RETRY_ORDER_PAID + params.get("trade_no");
             mqService.reConsumeMsg(10L, uniqueKey, tag, channel);
         }

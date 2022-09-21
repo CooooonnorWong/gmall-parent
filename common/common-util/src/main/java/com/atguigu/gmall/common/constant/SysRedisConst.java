@@ -55,6 +55,14 @@ public interface SysRedisConst {
      */
     String MQ_RETRY_WARE_STOCK_DEDUCE = "mq:retry:ware:stock:deduce:";
     /**
+     * 重试秒杀订单减库存
+     */
+    String MQ_RETRY_SECKILL_STOCK_DEDUCE = "mq:retry:seckill:stock:deduce:";
+    /**
+     * 重试数据库插入秒杀订单
+     */
+    String MQ_RETRY_SECKILL_ORDER_CREATED = "mq:retry:seckill:order:created:";
+    /**
      * 秒杀商品缓存键
      */
     String CACHE_SECKILL_GOODS = "seckill:goods:";
@@ -62,4 +70,12 @@ public interface SysRedisConst {
      * 秒杀商品库存缓存键
      */
     String CACHE_SECKILL_GOODS_STOCK = "seckill:goods:stock:";
+    /**
+     * 秒杀商品当天当前用户唯一秒杀码键
+     */
+    String CACHE_SECKILL_CODE = "seckill:code:";
+    /**
+     * 秒杀订单键
+     */
+    String CACHE_SECKILL_ORDER = "seckill:order:";
 }

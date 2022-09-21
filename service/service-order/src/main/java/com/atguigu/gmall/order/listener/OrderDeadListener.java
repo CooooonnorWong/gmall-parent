@@ -36,6 +36,7 @@ public class OrderDeadListener {
             orderBizService.closeOrder(orderMsg.getOrderId(), orderMsg.getUserId());
             channel.basicAck(deliveryTag, false);
         } catch (IOException e) {
+            e.printStackTrace();
             log.error("订单关闭业务失败,消息:{}，失败原因:{}", orderMsg, e);
             String uniqueKey = SysRedisConst.MQ_RETRY_CLOSE_ORDER + orderMsg.getOrderId();
             mqService.reConsumeMsg(10L, uniqueKey, deliveryTag, channel);

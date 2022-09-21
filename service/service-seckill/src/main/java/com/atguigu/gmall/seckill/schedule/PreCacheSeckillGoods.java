@@ -26,6 +26,7 @@ public class PreCacheSeckillGoods {
     @Scheduled(cron = "0 * * * * ?")//测试用
 //    @Scheduled(cron = "0 0 2 * * ?")
     public void preCacheSeckillGoods() {
+        log.info("同步秒杀商品库存");
         List<SeckillGoods> goods = seckillGoodsService.getTodaySeckillGoodsList();
         cacheService.cacheSeckillGoods(goods);
     }

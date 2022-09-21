@@ -65,6 +65,7 @@ public class OrderStockDeduceListener {
             orderInfoService.changeOrderStatus(statusMsg.getOrderId(), userId, processStatus, Arrays.asList(ProcessStatus.PAID));
             channel.basicAck(tag, false);
         } catch (IOException e) {
+            e.printStackTrace();
             String key = SysRedisConst.MQ_RETRY_WARE_STOCK_DEDUCE + statusMsg.getOrderId();
             mqService.reConsumeMsg(10L, key, tag, channel);
         }

@@ -30,6 +30,11 @@
         status,start_time,end_time,
         num,stock_count,sku_desc
     </sql>
+    <update id="deduceStock">
+        update seckill_goods
+        set stock_count = stock_count - 1
+        where sku_id = #{skuId}
+    </update>
     <select id="getCurrentSeckillGoodsCache" resultType="com.atguigu.gmall.model.activity.SeckillGoods">
         select id,
                spu_id,

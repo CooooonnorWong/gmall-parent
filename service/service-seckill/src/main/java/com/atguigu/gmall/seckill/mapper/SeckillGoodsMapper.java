@@ -21,6 +21,13 @@ public interface SeckillGoodsMapper extends BaseMapper<SeckillGoods> {
      * @return
      */
     List<SeckillGoods> getCurrentSeckillGoodsCache(@Param("date") String date);
+
+    /**
+     * 秒杀商品库存减1
+     *
+     * @param skuId
+     */
+    void deduceStock(@Param("skuId") Long skuId);
 }
 
 

@@ -2,6 +2,7 @@ package com.atguigu.gmall.feign.seckill;
 
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.activity.SeckillGoods;
+import com.atguigu.gmall.model.vo.seckill.SeckillOrderConfirmVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,4 +33,13 @@ public interface SeckillFeignClient {
      */
     @GetMapping("/goodsInfo/{skuId}")
     Result<SeckillGoods> getSeckillGoodsInfo(@PathVariable("skuId") Long skuId);
+
+    /**
+     * 获取秒杀订单确认页详情
+     *
+     * @param skuId
+     * @return
+     */
+    @GetMapping("/getSeckillOrderConfirmVo/{skuId}")
+    Result<SeckillOrderConfirmVo> getSeckillOrderConfirmVo(@PathVariable("skuId") Long skuId);
 }
